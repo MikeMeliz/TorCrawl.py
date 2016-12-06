@@ -77,8 +77,12 @@ def main(argv):
          e = sys.exc_info()[0]
          write_to_page( "<p>Error: %s</p>" % e )
     if verbose == True:
-      my_ip = load(urlopen('https://api.ipify.org/?format=json'))['ip']
-      print '## Your IP: ' + my_ip
+      try:
+        my_ip = load(urlopen('https://api.ipify.org/?format=json'))['ip']
+        print '## Your IP: ' + my_ip
+      except:
+        e = sys.exc_info()[0]
+        write_to_page( "<p>Error: %s</p>" % e )
     # Write webpage to file or output on terminal
     if outputToFile == True:
        try:

@@ -1,9 +1,5 @@
 #!/usr/bin/python
 
-__version__ = "0.1"
-__all__ = ["TorCrawl"]
-__author__ = "MikeMeliz"
-
 help='''
 Basic Information:
 TorCrawl.py is a simple python -terminal based- script
@@ -26,10 +22,12 @@ Arguments:
 
 import os
 import sys
+import re
 import getopt
 import socket
 import urllib
 import socks
+import subprocess
 from json import load
 from urllib2 import urlopen
 
@@ -44,7 +42,7 @@ def main(argv):
     try:
        opts, args = getopt.getopt(argv,"hvu:wo:",["help","verbose","url=","without","output="])
     except getopt.GetoptError:
-       print 'usage: torcrawl.py -h -v -w -u <fullPath> -o <outputFile>'
+       print('usage: torcrawl.py -h -v -w -u <fullPath> -o <outputFile>')
        sys.exit(2)
     for opt, arg in opts:
        if opt in ("-h", "--help"):
@@ -55,15 +53,29 @@ def main(argv):
        elif opt in ("-u", "--url"):
           website = arg
           if verbose == True:
-             print '## URL: ' + website
+             print('## URL: ' + website)
        elif opt in ("-o", "--output"):
           outputFile = arg
           outputToFile = True
           if verbose == True:
-             print '## File: ' + outputFile
+             print('## File: ' + outputFile)
        elif opt in ("-w", "--without"):
           withoutTor = True
     if withoutTor == False:
+       # Check if TOR service is running
+       if verbose == True:
+         checkTor = subprocess.check_output(['ps', '-e'])
+         def findWholeWord(w):
+           return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
+         if findWholeWord('tor')(checkTor):
+         #pattern = re.compile("tor")
+         #pattern = re.compile(r'\b({0})\b'.format(checkTor), flags=re.IGNORECASE)
+         #if pattern.match(checkTor):
+         #if 'tor' in checkTor:
+           print("## TOR is ready!")
+         else:
+           print("## TOR is NOT running! Use: service tor start")
+           sys.exit(2)
        try:
          SOCKS_PORT = 9050
          # Set socks proxy and wrap the urllib module
@@ -75,14 +87,14 @@ def main(argv):
          socket.getaddrinfo = getaddrinfo
        except:
          e = sys.exc_info()[0]
-         write_to_page( "<p>Error: %s</p>" % e )
+         print( "<p>Error: %s</p>" % e )
     if verbose == True:
       try:
         my_ip = load(urlopen('https://api.ipify.org/?format=json'))['ip']
         print '## Your IP: ' + my_ip
       except:
         e = sys.exc_info()[0]
-        write_to_page( "<p>Error: %s</p>" % e )
+        print( "<p>Error: %s</p>" % e )
     # Write webpage to file or output on terminal
     if outputToFile == True:
        try:
@@ -91,7 +103,7 @@ def main(argv):
           f.close()
        except:
           e = sys.exc_info()[0]
-          write_to_page( "<p>Error: %s</p>" % e )
+          print("<p>Error: %s</p>" % e + "Did you forget to add URL?")
        print 'File created on ' + os.getcwd() + '/' + outputFile
     else:
         print urllib.urlopen(website).read()

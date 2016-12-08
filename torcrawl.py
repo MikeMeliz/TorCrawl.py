@@ -70,7 +70,9 @@ def main(argv):
          if findWholeWord('tor')(checkTor):
            print("## TOR is ready!")
          else:
-           print("## TOR is NOT running! Use: service tor start")
+           print("## TOR is NOT running!")
+           print('## Enable tor with \'service tor start\' or add -w argument')
+           #print('## or add -w argument')
            sys.exit(2)
        try:
          SOCKS_PORT = 9050
@@ -83,14 +85,15 @@ def main(argv):
          socket.getaddrinfo = getaddrinfo
        except:
          e = sys.exc_info()[0]
-         print( "<p>Error: %s</p>" % e )
+         print( "Error: %s" % e +"\n## Can't establish connection with TOR")
     if verbose == True:
       try:
-        my_ip = load(urlopen('https://api.ipify.org/?format=json'))['ip']
+        webIPcheck = 'https://api.ipify.org/?format=json'
+        my_ip = load(urlopen(webIPcheck))['ip']
         print '## Your IP: ' + my_ip
       except:
         e = sys.exc_info()[0]
-        print( "<p>Error: %s</p>" % e )
+        print( "Error: %s" % e + "\n## IP can't obtain \n## Is " + webIPcheck + "up?")
     # Write webpage to file or output on terminal
     if outputToFile == True:
        try:
@@ -99,10 +102,14 @@ def main(argv):
           f.close()
        except:
           e = sys.exc_info()[0]
-          print("<p>Error: %s</p>" % e + "Did you forget to add URL?")
-       print 'File created on ' + os.getcwd() + '/' + outputFile
+          print("Error: %s" % e + "\n## Not valid URL \n## Did you forget \'http://\'?")
+       print '## File created on ' + os.getcwd() + '/' + outputFile
     else:
-        print urllib.urlopen(website).read()
+        try:
+          print urllib.urlopen(website).read()
+        except:
+          e = sys.exc_info()[0]
+          print("Error: %s" % e + "\n## Not valid URL \n## Did you forget \'http://\'?")
 
 if __name__ == "__main__":
     main(sys.argv[1:])
@@ -113,4 +120,5 @@ Arguments: https://www.tutorialspoint.com/python/python_command_line_arguments.h
 Input/Output: https://docs.python.org/2/tutorial/inputoutput.html
 Crawl through Tor: http://stackoverflow.com/questions/29784871/urllib2-using-tor-in-python (@Padraic Cunningham)
 Public IP: http://stackoverflow.com/questions/9481419/how-can-i-get-the-public-ip-using-python2-7 (@Tadeck)
+findWholeWord: http://stackoverflow.com/questions/20137032/trying-to-find-whole-words-not-just-partial-words-python/20137162 (@Goran)
 '''

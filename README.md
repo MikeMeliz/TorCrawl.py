@@ -18,7 +18,7 @@ on the page.
 arg | Long | Description
 ----|------|------------
 -h  |--help| Help
--v  |--verbose| Show steps
+-v  |--verbose| Verbose output 
 -u  |--url | URL of Webpage
--w  |--without| Without the us of TOR
+-w  |--without| Without the use of TOR
 -o  |--output| Output to File

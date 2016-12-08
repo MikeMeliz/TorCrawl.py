@@ -8,9 +8,9 @@ It's created in that way that you can use grep to search
 on the page.
 
 Examples:
-./TorCrawl.py -u http://www.github.com 
-./TorCrawl.py -v -w -u http://www.github.com -o github.htm 
-./TorCrawl.py -u http://www.github.com | grep 'google-analytics'
+./torcrawl.py -u http://www.github.com 
+./torcrawl.py -v -w -u http://www.github.com -o github.htm 
+./torcrawl.py -u http://www.github.com | grep 'google-analytics'
 
 Arguments:
 -h, --help     : Help
@@ -68,10 +68,6 @@ def main(argv):
          def findWholeWord(w):
            return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
          if findWholeWord('tor')(checkTor):
-         #pattern = re.compile("tor")
-         #pattern = re.compile(r'\b({0})\b'.format(checkTor), flags=re.IGNORECASE)
-         #if pattern.match(checkTor):
-         #if 'tor' in checkTor:
            print("## TOR is ready!")
          else:
            print("## TOR is NOT running! Use: service tor start")

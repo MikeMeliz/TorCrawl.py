@@ -2,22 +2,33 @@
 
 help='''
 Basic Information:
-TorCrawl.py is a simple python -terminal based- script
-to crawl webpages through TOR. 
-It's created in that way that you can use grep to search
-on the page or manipulate the output with any other tool.
+TorCrawl.py is a python -terminal based- script
+to crawl and extract webpages through TOR network. 
 
 Examples:
 ./torcrawl.py -u http://www.github.com 
 ./torcrawl.py -v -w -u http://www.github.com -o github.htm 
 ./torcrawl.py -u http://www.github.com | grep 'google-analytics'
 
-Arguments:
--h, --help     : Help
--v, --verbose  : Show steps
--u, --url      : URL of Webpage to crawl
--w, --without  : Without the use of TOR Relay (default ON) 
--o, --output   : Output to file
+General:
+-h, --help        : Help
+-v, --verbose     : Show steps
+-u, --url         : URL of Webpage to crawl or extract
+-w, --without     : Without the use of TOR Relay (default ON) 
+
+Extract:
+-e, --extract     : Extract page's code to terminal or file     (TODO)
+-i, --input       : Input file with URLs                        (TODO)
+-o, --output      : Output to file
+
+Crawl:
+-c, --
+-d, --cdepth      : Set depth of crawl's travel (1-5)           (TODO)
+-ce,--exclusions  : Paths that you don't want to include        (TODO)
+-sp,--simultaneous: How many pages to visit at the same time    (TODO)
+-p, --pause       : The length of time the crawler will pause   (TODO)
+-l, --log         : A save log will let you see which URLs were (TODO)
+                    visited and which were converted into data.
 '''
 
 import os

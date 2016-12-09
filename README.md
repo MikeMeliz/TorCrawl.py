@@ -2,9 +2,9 @@
 
 ##Basic Information:
 TorCrawl.py is a simple python -terminal based- script
-to crawl webpage through TOR. 
+to crawl webpages through TOR. 
 It's created in that way that you can use grep to search
-on the page.
+on the page or manipulate the output with any other tool.
 
 ##Examples:
 `./torcrawl.py -u http://www.github.com `

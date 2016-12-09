@@ -3,9 +3,9 @@
 help='''
 Basic Information:
 TorCrawl.py is a simple python -terminal based- script
-to crawl webpage through TOR. 
+to crawl webpages through TOR. 
 It's created in that way that you can use grep to search
-on the page.
+on the page or manipulate the output with any other tool.
 
 Examples:
 ./torcrawl.py -u http://www.github.com 
@@ -31,86 +31,102 @@ import subprocess
 from json import load
 from urllib2 import urlopen
 
+# Check if TOR service is running
+def checkTor():
+    checkTor = subprocess.check_output(['ps', '-e'])
+    def findWholeWord(w):
+      return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
+    if findWholeWord('tor')(checkTor):
+      print("## TOR is ready!")
+    else:
+      print("## TOR is NOT running!")
+      print('## Enable tor with \'service tor start\' or add -w argument')
+      sys.exit(2)
 
+# Set socket and connection with TOR network
+def connectTor():
+    try:
+      SOCKS_PORT = 9050
+      # Set socks proxy and wrap the urllib module
+      socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', SOCKS_PORT)
+      socket.socket = socks.socksocket
+      # Perform DNS resolution through the socket
+      def getaddrinfo(*args):
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, '', (args[0], args[1]))]
+      socket.getaddrinfo = getaddrinfo
+    except:
+      e = sys.exc_info()[0]
+      print( "Error: %s" % e +"\n## Can't establish connection with TOR")
+
+# Check your IP from external website
+def checkIP():
+    try:
+      webIPcheck = 'https://api.ipify.org/?format=json'
+      my_ip = load(urlopen(webIPcheck))['ip']
+      print '## Your IP: ' + my_ip
+    except:
+      e = sys.exc_info()[0]
+      print( "Error: %s" % e + "\n## IP can't obtain \n## Is " + webIPcheck + "up?")
+
+# Write output to file
+def output(outputFile, website):
+    try:
+      f = open(outputFile,'w')
+      f.write(urllib.urlopen(website).read())
+      f.close()
+      print '## File created on ' + os.getcwd() + '/' + outputFile
+    except:
+      e = sys.exc_info()[0]
+      print("Error: %s" % e + "\n## Not valid URL \n## Did you forget \'http://\'?")
+
+# Write output to terminal
+def outputToTerm(website):
+      try:
+        print urllib.urlopen(website).read()
+      except:
+        e = sys.exc_info()[0]
+        print("Error: %s" % e + "\n## Not valid URL \n## Did you forget \'http://\'?")
+    
 def main(argv):
-    my_ip = ''
-    website = ''
-    outputFile = ''
     verbose = False
     outputToFile = False
     withoutTor = False
-    try:
-       opts, args = getopt.getopt(argv,"hvu:wo:",["help","verbose","url=","without","output="])
-    except getopt.GetoptError:
-       print('usage: torcrawl.py -h -v -w -u <fullPath> -o <outputFile>')
-       sys.exit(2)
-    for opt, arg in opts:
-       if opt in ("-h", "--help"):
-          print help
-          sys.exit()
-       elif opt in ("-v", "--verbose"):
-          verbose = True
-       elif opt in ("-u", "--url"):
-          website = arg
-          if verbose == True:
-             print('## URL: ' + website)
-       elif opt in ("-o", "--output"):
-          outputFile = arg
-          outputToFile = True
-          if verbose == True:
-             print('## File: ' + outputFile)
-       elif opt in ("-w", "--without"):
-          withoutTor = True
-    if withoutTor == False:
-       # Check if TOR service is running
-       if verbose == True:
-         checkTor = subprocess.check_output(['ps', '-e'])
-         def findWholeWord(w):
-           return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
-         if findWholeWord('tor')(checkTor):
-           print("## TOR is ready!")
-         else:
-           print("## TOR is NOT running!")
-           print('## Enable tor with \'service tor start\' or add -w argument')
-           #print('## or add -w argument')
-           sys.exit(2)
-       try:
-         SOCKS_PORT = 9050
-         # Set socks proxy and wrap the urllib module
-         socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', SOCKS_PORT)
-         socket.socket = socks.socksocket
-         # Perform DNS resolution through the socket
-         def getaddrinfo(*args):
-            return [(socket.AF_INET, socket.SOCK_STREAM, 6, '', (args[0], args[1]))]
-         socket.getaddrinfo = getaddrinfo
-       except:
-         e = sys.exc_info()[0]
-         print( "Error: %s" % e +"\n## Can't establish connection with TOR")
-    if verbose == True:
-      try:
-        webIPcheck = 'https://api.ipify.org/?format=json'
-        my_ip = load(urlopen(webIPcheck))['ip']
-        print '## Your IP: ' + my_ip
-      except:
-        e = sys.exc_info()[0]
-        print( "Error: %s" % e + "\n## IP can't obtain \n## Is " + webIPcheck + "up?")
-    # Write webpage to file or output on terminal
-    if outputToFile == True:
-       try:
-          f = open(outputFile,'w')
-          f.write(urllib.urlopen(website).read())
-          f.close()
-       except:
-          e = sys.exc_info()[0]
-          print("Error: %s" % e + "\n## Not valid URL \n## Did you forget \'http://\'?")
-       print '## File created on ' + os.getcwd() + '/' + outputFile
-    else:
-        try:
-          print urllib.urlopen(website).read()
-        except:
-          e = sys.exc_info()[0]
-          print("Error: %s" % e + "\n## Not valid URL \n## Did you forget \'http://\'?")
 
+    try:
+      opts, args = getopt.getopt(argv,"hvu:wo:",["help","verbose","url=","without","output="])
+    except getopt.GetoptError:
+      print('usage: torcrawl.py -h -v -w -u <fullPath> -o <outputFile>')
+      sys.exit(2)
+    for opt, arg in opts:
+      if opt in ("-h", "--help"):
+        print help
+        sys.exit()
+      elif opt in ("-v", "--verbose"):
+        verbose = True
+      elif opt in ("-u", "--url"):
+        website = arg
+      elif opt in ("-o", "--output"):
+        outputFile = arg
+        outputToFile = True
+      elif opt in ("-w", "--without"):
+        withoutTor = True
+        
+    if withoutTor == False:
+      if verbose == True:
+        checkTor()
+      connectTor()
+
+    if verbose == True:
+      print('## URL: ' + website)
+      checkIP()
+    
+    if outputToFile == True:
+      if verbose == True:
+        print('## Filename: ' + outputFile)
+      output(outputFile, website)
+    else:
+      outputToTerm(website)
+      
 if __name__ == "__main__":
     main(sys.argv[1:])
 

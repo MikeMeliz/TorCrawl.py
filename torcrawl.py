@@ -2,33 +2,36 @@
 
 help='''
 Basic Information:
-TorCrawl.py is a python -terminal based- script
-to crawl and extract webpages through TOR network. 
+TorCrawl.py is a python script to crawl and extract webpages through 
+TOR network. 
 
 Examples:
-./torcrawl.py -u http://www.github.com 
-./torcrawl.py -v -w -u http://www.github.com -o github.htm 
-./torcrawl.py -u http://www.github.com | grep 'google-analytics'
+python torcrawl.py -u http://www.github.com 
+python torcrawl.py -v -w -u http://www.github.com -o github.htm 
+python torcrawl.py -u http://www.github.com | grep 'google-analytics'
+python torcrawl.py -v -w -u http://www.github.com -c 
 
 General:
 -h, --help        : Help
 -v, --verbose     : Show steps
 -u, --url         : URL of Webpage to crawl or extract
--w, --without     : Without the use of TOR Relay (default ON) 
+-w, --without     : Without the use of Relay TOR (default ON) 
 
 Extract:
--e, --extract     : Extract page's code to terminal or file     (TODO)
--i, --input       : Input file with URLs                        (TODO)
--o, --output      : Output to file
+-e, --extract     : Extract page's code to terminal or file.
+                    By default, if you don't specify a mode, the
+                    script will try to extract the page(s)
+-i, --input       : Input file with URL(s)
+-o, --output      : Output page(s) to file(s)
 
 Crawl:
--c, --
--d, --cdepth      : Set depth of crawl's travel (1-5)           (TODO)
--ce,--exclusions  : Paths that you don't want to include        (TODO)
--sp,--simultaneous: How many pages to visit at the same time    (TODO)
--p, --pause       : The length of time the crawler will pause   (TODO)
--l, --log         : A save log will let you see which URLs were (TODO)
-                    visited and which were converted into data.
+-c, --crawl       : Crawl website
+-d, --cdepth      : Set depth of crawl's travel (1-5)
+-e, --exclusions  : Paths that you don't want to include
+-s, --simultaneous: How many pages to visit at the same time
+-p, --pause       : The length of time the crawler will pause
+-l, --log         : A save log will let you see which URLs were
+                    visited
 '''
 
 import os
@@ -36,11 +39,14 @@ import sys
 import re
 import getopt
 import socket
-import urllib
+import urllib2
 import socks
 import subprocess
+import time
 from json import load
 from urllib2 import urlopen
+from BeautifulSoup import BeautifulSoup
+from collections import namedtuple
 
 # Check if TOR service is running
 def checkTor():
@@ -83,7 +89,7 @@ def checkIP():
 def output(outputFile, website):
     try:
       f = open(outputFile,'w')
-      f.write(urllib.urlopen(website).read())
+      f.write(urllib2.urlopen(website).read())
       f.close()
       print '## File created on ' + os.getcwd() + '/' + outputFile
     except:
@@ -92,23 +98,82 @@ def output(outputFile, website):
 
 # Write output to terminal
 def outputToTerm(website):
-      try:
-        print urllib.urlopen(website).read()
-      except:
-        e = sys.exc_info()[0]
-        print("Error: %s" % e + "\n## Not valid URL \n## Did you forget \'http://\'?")
+    try:
+      print urllib2.urlopen(website).read()
+    except:
+      e = sys.exc_info()[0]
+      print("Error: %s" % e + "\n## Not valid URL \n## Did you forget \'http://\'?")
+
+# To get links through a page
+def crawler(website, cdepth, cpause):
+    lst = [website]
+    idx = 0
     
+    print("## Crawler Started from " + website + " with step " + str(cdepth) + " and wait " + str(cpause))
+
+    # Insert fist links into lst list
+    html_page = urllib2.urlopen(website)
+    soup = BeautifulSoup(html_page)
+    for link in soup.findAll('a'):        
+      link = link.get('href')
+      if link != None:
+        # For full URLs with domain infront
+        if link.startswith(website):
+          lst.append(link)
+        # For relative paths with / infront
+        elif link.startswith('/'):
+          finalLink = website + link
+          lst.append(finalLink)
+        # For relative paths without /
+        elif re.search('^.*\.(html|htm|aspx|php|doc|css|js|less)$', link, re.IGNORECASE):
+          finalLink = website + "/" + link
+          lst.append(finalLink)
+        # TODO: Search for subdomains
+        #elif :
+        # TODO: Exclude duplicates
+        #elif :
+
+    flenlst = str(len(lst))
+    print("## First page's URLs: " + flenlst)
+    
+    '''
+    time.sleep(cpause)
+
+    # Get links for other depths
+    for x in range(1, int(cdepth)):
+      for item in lst:
+        html_page = urllib2.urlopen(lst[idx])
+        soup = BeautifulSoup(html_page)
+        for link in soup.findAll('a'):
+          link = link.get('href')
+          if link != None:
+            if link.startswith(website):
+              lst.append(link)
+        idx = idx + 1
+        print ("## " + str(idx) + "/" + flenlst + " List Lenght: " + str(len(lst)))
+        time.sleep(cpause)
+    '''
+
+    for item in lst:
+      print item
+
 def main(argv):
     verbose = False
     outputToFile = False
     withoutTor = False
+    crawl = False
+    cdepth = 1
+    simultaneous = 1
+    cpause = 0
 
     try:
-      opts, args = getopt.getopt(argv,"hvu:wo:",["help","verbose","url=","without","output="])
+      opts, args = getopt.getopt(argv,"hvcu:wo:d:p:",["help","verbose","url=","without","output=","crawl=","pause="])
     except getopt.GetoptError:
       print('usage: torcrawl.py -h -v -w -u <fullPath> -o <outputFile>')
       sys.exit(2)
     for opt, arg in opts:
+      
+      # General
       if opt in ("-h", "--help"):
         print help
         sys.exit()
@@ -116,11 +181,32 @@ def main(argv):
         verbose = True
       elif opt in ("-u", "--url"):
         website = arg
+      elif opt in ("-w", "--without"):
+        withoutTor = True
       elif opt in ("-o", "--output"):
         outputFile = arg
         outputToFile = True
-      elif opt in ("-w", "--without"):
-        withoutTor = True
+
+      # Extract
+      elif opt in ("-e", "--extract"):
+        extract = True
+      elif opt in ("-i", "--input"):
+        inputFile = arg
+        inputFromFile = True
+
+      # Crawl
+      elif opt in ("-c", "--crawl"):
+        crawl = True
+      elif opt in ("-d", "--cdepth"):
+        cdepth = arg
+      elif opt in ("-e", "--exclusions"):
+        cexclus = arg
+      elif opt in ("-s", "--simultaneous"):
+        csimul = arg
+      elif opt in ("-c", "--pause"):
+        cpause = arg
+      elif opt in ("-l", "--log"):
+        logs = True
         
     if withoutTor == False:
       if verbose == True:
@@ -131,21 +217,17 @@ def main(argv):
       print('## URL: ' + website)
       checkIP()
     
-    if outputToFile == True:
-      if verbose == True:
-        print('## Filename: ' + outputFile)
-      output(outputFile, website)
+    if crawl == True:
+        crawler(website, cdepth, cpause)
     else:
-      outputToTerm(website)
-      
+      if outputToFile == True:
+        if verbose == True:
+          print('## Filename: ' + outputFile)
+        output(outputFile, website)
+      else:
+        outputToTerm(website)
+
+
 if __name__ == "__main__":
     main(sys.argv[1:])
 
-'''
-References & Credits:
-Arguments: https://www.tutorialspoint.com/python/python_command_line_arguments.htm
-Input/Output: https://docs.python.org/2/tutorial/inputoutput.html
-Crawl through Tor: http://stackoverflow.com/questions/29784871/urllib2-using-tor-in-python (@Padraic Cunningham)
-Public IP: http://stackoverflow.com/questions/9481419/how-can-i-get-the-public-ip-using-python2-7 (@Tadeck)
-findWholeWord: http://stackoverflow.com/questions/20137032/trying-to-find-whole-words-not-just-partial-words-python/20137162 (@Goran)
-'''

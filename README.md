@@ -3,11 +3,27 @@
   Description: a python script to crawl and extract (regular or onion) webpages through TOR network. 
   Author: MikeMeliz
   -->
-  
 # TorCrawl.py
+
+![](https://img.shields.io/badge/version-Alpha-yellowgreen.svg)
 
 ## Basic Information:
 TorCrawl.py is a python script to crawl and extract (regular or onion) webpages through TOR network. 
+
+* **Warning:** Crawling is not illegal, but violating copyright is. It’s always best to double check a website’s T&C before crawling them. Some websites set up what’s called robots.txt to tell crawlers not to visit those pages. This crawler will allow you to go around this, but we always recommend respecting robots.txt.
+* **Keep in mind:** Extracting and crawling through TOR network take some time. That's normal behaviour; you can find more information [here](https://www.torproject.org/docs/faq.html.en#WhySlow). 
+
+### What make it simple?
+If you are a terminal maniac you know that things have to be simple and clear. Passing output into other tools is necessary and accuracy is the key.
+
+With a single argument you can read an .onion webpage or a regular one through TOR Network and using pipes you can pass the output at any other tool you prefer.
+
+![ExtractAndGrep](https://cloud.githubusercontent.com/assets/9204902/21080715/c34511ca-bfbe-11e6-9fec-230e6430d5dc.png)
+
+If you want to crawl the links of a webpage use the `-c` and **BAM** you got on a file all the inside links. You can even use `-d` to crawl them and so on. As far, there is also the necessary argument `-p` to wait some seconds before the next crawl.
+
+![CrawlwDepthwPause](https://cloud.githubusercontent.com/assets/9204902/21080526/f2b80908-bfb9-11e6-8bc0-fd3eebe182cc.png)
+
 
 ## Installation:
 To install this script, you need to clone that repository:
@@ -68,7 +84,7 @@ Extract to terminal and find only the line with google-analytics
 
 ```
 python torcrawl.py -u http://www.github.com | grep 'google-analytics'
-    <meta name="google-analytics" content="UA-3769691-2">
+    <meta name="google-analytics" content="UA-*******-*">
 ```
 
 ### As Crawler:

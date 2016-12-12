@@ -1,17 +1,59 @@
 #!/usr/bin/python
 
+import sys
 import re
 import urllib2
 import time
 from BeautifulSoup import BeautifulSoup
 
+# Exclude links that we dont need
+def excludes(link, website):
+    if link == None:
+      return True
+    # #links
+    elif '#' in link:
+      return True
+    # External links
+    elif link.startswith('http') and not link.startswith(website):
+      return True
+    # Telephone Number
+    elif link.startswith('tel:'):
+      return True
+    # Mails
+    elif link.startswith('mailto:'):
+      return True
+    # Type of files
+    elif re.search('^.*\.(pdf|jpg|jpeg|png|doc)$', link, re.IGNORECASE):
+      return True
+
+# Canonicalization of the link
+def canonical(link, website):
+    # Already formated
+    if link.startswith(website):
+      return link
+    # For relative paths with / infront
+    elif link.startswith('/'):
+      if website[-1] == '/':
+        finalLink = website[:-1] + link
+      else:
+        finalLink = website + link
+      return finalLink
+    # For relative paths without /
+    elif re.search('^.*\.(html|htm|aspx|php|doc|css|js|less)$', link, re.IGNORECASE):
+      # Pass to 
+      if website[-1] == '/':
+        finalLink = website + link
+      else:
+        finalLink = website + "/" + link
+      return finalLink          
+
+
 # Core of crawler
 def crawler(website, cdepth, cpause):
     lst = set()
-    ordlst = list()
+    ordlst = []
     ordlst.insert(0, website)
     ordlstind = 0
-    urlpath = website
     idx = 0
     
     print("## Crawler Started from " + website + " with step " + str(cdepth) + " and wait " + str(cpause))
@@ -30,56 +72,38 @@ def crawler(website, cdepth, cpause):
             print e
         else:
           html_page = urllib2.urlopen(website)
-        
+          ordlstind += 1
         soup = BeautifulSoup(html_page)
+        
+        # For each <a href=""> tag
         for link in soup.findAll('a'):        
           link = link.get('href')
           
-          # Excludes
+          if excludes(link, website):
+            continue
           
-          # None (to avoid NoneType exceptions)
-          if link == None:
-            continue
-          # #links
-          elif link.startswith('#'):
-            continue
-          # External links
-          elif link.startswith('http') and not link.startswith(website):
-            continue
-      
-          # Canonicalization
-          
-          # Already formated
-          if link.startswith(website):
-            lst.add(link)
-          # For relative paths with / infront
-          elif link.startswith('/'):
-            if website[-1] == '/':
-              finalLink = website[:-1] + link
-            else:
-              finalLink = website + link
-            lst.add(finalLink)
-          # For relative paths without /
-          elif re.search('^.*\.(html|htm|aspx|php|doc|css|js|less)$', link, re.IGNORECASE):
-            # Pass to 
-            if website[-1] == '/':
-              finalLink = website + link
-            else:
-              finalLink = website + "/" + link
-            lst.add(finalLink)
+          verlink = canonical(link, website)
+          lst.add(verlink)
+        
+        # For each <img src="">
 
-        ordlstind = ordlstind + 1
+        # For ecah <script src="">
+
         # Pass new on list and re-set it to delete duplicates
         ordlst = ordlst + list(set(lst))
         ordlst = list(set(ordlst))
-        #print("\x08## List's size: " + str(len(ordlst)))
+        
+        sys.stdout.write("Results: " + str(len(ordlst)) + "\r")
+        sys.stdout.flush()
+
         # Pause time
         if (ordlst.index(item) != len(ordlst)-1) and cpause > 0:
-          #print("## Waiting: " + str(cpause) + "sec")
+          #sys.stdout.write("Waiting..\r")
+          #sys.stdout.flush()
           time.sleep(float(cpause))
 
       print("## Step " + str(x+1) + " completed with: " + str(len(ordlst)) + " results")
 
-    # TODO: Order the list 
-
+    # TODO: Order the list
+     
     return ordlst

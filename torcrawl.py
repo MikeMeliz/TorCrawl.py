@@ -2,8 +2,8 @@
 
 help='''
 Basic Information:
-TorCrawl.py is a python script to crawl and extract webpages through 
-TOR network. 
+TorCrawl.py is a python script to crawl and extract (regular or onion)
+webpages through TOR network. 
 
 Examples:
 python torcrawl.py -u http://www.github.com 
@@ -34,19 +34,19 @@ Crawl:
                     visited
 '''
 
-import os
 import sys
 import re
 import getopt
 import socket
-import urllib2
 import socks
 import subprocess
-import time
-from json import load
 from urllib2 import urlopen
-from BeautifulSoup import BeautifulSoup
+from json import load
 from collections import namedtuple
+
+# TorCrawl Modules
+from modules.crawler import *
+from modules.extractor import *
 
 # Check if TOR service is running
 def checkTor():
@@ -84,9 +84,9 @@ def checkIP():
     except:
       e = sys.exc_info()[0]
       print( "Error: %s" % e + "\n## IP can't obtain \n## Is " + webIPcheck + "up?")
-
+'''
 # Write output to file
-def output(outputFile, website):
+def extractorFile(outputFile, website):
     try:
       f = open(outputFile,'w')
       f.write(urllib2.urlopen(website).read())
@@ -97,96 +97,18 @@ def output(outputFile, website):
       print("Error: %s" % e + "\n## Not valid URL \n## Did you forget \'http://\'?")
 
 # Write output to terminal
-def outputToTerm(website):
+def extractor(website):
     try:
       print urllib2.urlopen(website).read()
     except:
       e = sys.exc_info()[0]
       print("Error: %s" % e + "\n## Not valid URL \n## Did you forget \'http://\'?")
-
-# Core of crawler
-def crawler(website, cdepth, cpause):
-    lst = set()
-    ordlst = list()
-    ordlst.insert(0, website)
-    ordlstind = 0
-    urlpath = website
-    idx = 0
-    
-    print("## Crawler Started from " + website + " with step " + str(cdepth) + " and wait " + str(cpause))
-    
-    # Depth
-    for x in range(0, int(cdepth)):
-      
-      # For every element of list
-      for item in ordlst: 
-
-        # Check if is the first element
-        if ordlstind > 0:
-          try:
-            html_page = urllib2.urlopen(item)
-          except urllib2.HTTPError, e:
-            print e
-        else:
-          html_page = urllib2.urlopen(website)
-        
-        soup = BeautifulSoup(html_page)
-        for link in soup.findAll('a'):        
-          link = link.get('href')
-          
-          # Excludes
-          
-          # None (to avoid NoneType exceptions)
-          if link == None:
-            continue
-          # #links
-          elif link.startswith('#'):
-            continue
-          # External links
-          elif link.startswith('http') and not link.startswith(website):
-            continue
-      
-          # Canonicalization
-          
-          # Already formated
-          if link.startswith(website):
-            lst.add(link)
-          # For relative paths with / infront
-          elif link.startswith('/'):
-            if website[-1] == '/':
-              finalLink = website[:-1] + link
-            else:
-              finalLink = website + link
-            lst.add(finalLink)
-          # For relative paths without /
-          elif re.search('^.*\.(html|htm|aspx|php|doc|css|js|less)$', link, re.IGNORECASE):
-            # Pass to 
-            if website[-1] == '/':
-              finalLink = website + link
-            else:
-              finalLink = website + "/" + link
-            lst.add(finalLink)
-
-        ordlstind = ordlstind + 1
-        # Pass new on list and re-set it to delete duplicates
-        ordlst = ordlst + list(set(lst))
-        ordlst = list(set(ordlst))
-        #print("\x08## List's size: " + str(len(ordlst)))
-        # Pause time
-        if (ordlst.index(item) != len(ordlst)-1) and cpause > 0:
-          #print("## Waiting: " + str(cpause) + "sec")
-          time.sleep(float(cpause))
-
-      print("## Step " + str(x+1) + " completed with: " + str(len(ordlst)) + " results")
-
-    # TODO: Order the list 
-
-    return ordlst
+'''
 
 def main(argv):
     verbose = False
-    outputToFile = False
     withoutTor = False
+    outputToFile = False
     crawl = False
     cdepth = 1
     simultaneous = 1
@@ -254,9 +176,9 @@ def main(argv):
       if outputToFile == True:
         if verbose == True:
           print('## Filename: ' + outputFile)
-        output(outputFile, website)
+        extractorFile(outputFile, website)
       else:
-        outputToTerm(website)
+        extractor(website)
 
 
 if __name__ == "__main__":

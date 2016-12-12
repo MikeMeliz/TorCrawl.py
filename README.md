@@ -5,7 +5,7 @@
   -->
 # TorCrawl.py
 
-![](https://img.shields.io/badge/version-Alpha-yellowgreen.svg)
+[![Version](https://img.shields.io/badge/version-Alpha-yellowgreen.svg?style=plastic)]() [![license](https://img.shields.io/github/license/MikeMeliz/TorCrawl.py.svg?style=plastic)]()
 
 ## Basic Information:
 TorCrawl.py is a python script to crawl and extract (regular or onion) webpages through TOR network. 
@@ -47,18 +47,17 @@ arg | Long | Description
 -v  |--verbose| Verbose output 
 -u  |--url | URL of Webpage
 -w  |--without| Without the use of TOR
--o  |--output| Output to File
 **Extract**: | | 
 -e  |--extract| Extract page's code to terminal or file. 
--i  |~~--input~~| ~~Input file with URL(s)~~
+~~-i~~  |~~--input~~| ~~Input file with URL(s)~~
 -o  |--output| Output page(s) to file(s)
 **Crawl**: | |
 -c  |--crawl| Crawl website
 -d  |--cdepth| Set depth of crawl's travel (1-5)
--z  |~~--exclusions~~| ~~Paths that you don't want to include~~
--s  |~~--simultaneous~~| ~~How many pages to visit at the same time~~
--p  |--pause| The length of time the crawler will pause
--l  |~~--log~~| ~~A save log will let you see which URLs were visited~~
+~~-z~~  |~~--exclusions~~| ~~Paths that you don't want to include~~
+~~-s~~  |~~--simultaneous~~| ~~How many pages to visit at the same time~~
+~~-p~~  |--pause| The length of time the crawler will pause
+~~-l~~  |~~--log~~| ~~A save log will let you see which URLs were visited~~
 *every argument with overline is still in development*
 
 ## Usage:

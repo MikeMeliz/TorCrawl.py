@@ -10,8 +10,8 @@
 ## Basic Information:
 TorCrawl.py is a python script to crawl and extract (regular or onion) webpages through TOR network. 
 
-* **Warning:** Crawling is not illegal, but violating copyright is. It’s always best to double check a website’s T&C before crawling them. Some websites set up what’s called robots.txt to tell crawlers not to visit those pages. This crawler will allow you to go around this, but we always recommend respecting robots.txt.
-* **Keep in mind:** Extracting and crawling through TOR network take some time. That's normal behaviour; you can find more information [here](https://www.torproject.org/docs/faq.html.en#WhySlow). 
+> **Warning:** Crawling is not illegal, but violating copyright is. It’s always best to double check a website’s T&C before crawling them. Some websites set up what’s called robots.txt to tell crawlers not to visit those pages. This crawler will allow you to go around this, but we always recommend respecting robots.txt.
+> **Keep in mind:** Extracting and crawling through TOR network take some time. That's normal behaviour; you can find more information [here](https://www.torproject.org/docs/faq.html.en#WhySlow). 
 
 ### What make it simple?
 If you are a terminal maniac you know that things have to be simple and clear. Passing output into other tools is necessary and accuracy is the key.
@@ -66,7 +66,7 @@ arg | Long | Description
 To just extract a single webpage to terminal:
 
 ```
-python torcrawl.py -u http://www.github.com
+$ python torcrawl.py -u http://www.github.com
 <!DOCTYPE html>
 ...
 </html>
@@ -75,14 +75,14 @@ python torcrawl.py -u http://www.github.com
 Extract into a file (github.htm) without the use of TOR
 
 ```
-python torcrawl.py -w -u http://www.github.com -o github.htm
+$ python torcrawl.py -w -u http://www.github.com -o github.htm
 ## File created on /script/path/github.htm
 ```
 
 Extract to terminal and find only the line with google-analytics
 
 ```
-python torcrawl.py -u http://www.github.com | grep 'google-analytics'
+$ python torcrawl.py -u http://www.github.com | grep 'google-analytics'
     <meta name="google-analytics" content="UA-*******-*">
 ```
 
@@ -91,7 +91,7 @@ Crawl the links of the webpage without the use of TOR,
 also show verbose output (really helpfull)
 
 ```
-python torcrawl.py -v -w -u http://www.github.com -c
+$ python torcrawl.py -v -w -u http://www.github.com -c
 ## URL: http://www.github.com
 ## Your IP: *.*.*.*
 ## Crawler Started from http://www.github.com with step 1 and wait 0
@@ -102,7 +102,7 @@ python torcrawl.py -v -w -u http://www.github.com -c
 Crawl the webpage with depth 2 (2 clicks) and 5 seconds waiting before crawl the next page
 
 ```
-python torcrawl.py -v -u http://www.github.com -c -d 2 -p 5
+$ python torcrawl.py -v -u http://www.github.com -c -d 2 -p 5
 ## URL: http://www.github.com
 ## Your IP: *.*.*.*
 ## Crawler Started from http://www.github.com with step 2 and wait 5

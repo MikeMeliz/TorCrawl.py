@@ -8,6 +8,7 @@ from BeautifulSoup import BeautifulSoup
 
 # Exclude links that we dont need
 def excludes(link, website):
+    # For NoneType Exceptions, got to find a solution here
     if link == None:
       return True
     # #links
@@ -45,7 +46,8 @@ def canonical(link, website):
         finalLink = website + link
       else:
         finalLink = website + "/" + link
-      return finalLink          
+      return finalLink   
+    # Clean links from '?page=' arguments       
 
 
 # Core of crawler
@@ -67,7 +69,8 @@ def crawler(website, cdepth, cpause):
         # Check if is the first element
         if ordlstind > 0:
           try:
-            html_page = urllib2.urlopen(item)
+            if item != None:
+              html_page = urllib2.urlopen(item)
           except urllib2.HTTPError, e:
             print e
         else:
@@ -87,23 +90,21 @@ def crawler(website, cdepth, cpause):
         
         # For each <img src="">
 
-        # For ecah <script src="">
+        # For ech <script src="">
 
         # Pass new on list and re-set it to delete duplicates
         ordlst = ordlst + list(set(lst))
         ordlst = list(set(ordlst))
         
-        sys.stdout.write("Results: " + str(len(ordlst)) + "\r")
+        sys.stdout.write("-- Results: " + str(len(ordlst)) + "\r")
         sys.stdout.flush()
 
         # Pause time
         if (ordlst.index(item) != len(ordlst)-1) and cpause > 0:
-          #sys.stdout.write("Waiting..\r")
-          #sys.stdout.flush()
           time.sleep(float(cpause))
 
       print("## Step " + str(x+1) + " completed with: " + str(len(ordlst)) + " results")
 
     # TODO: Order the list
-     
+
     return ordlst

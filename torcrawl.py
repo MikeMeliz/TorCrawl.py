@@ -133,7 +133,7 @@ def main(argv):
         crawl = True
       elif opt in ("-d", "--cdepth"):
         cdepth = arg
-      elif opt in ("-e", "--exclusions"):
+      elif opt in ("-z", "--exclusions"):
         cexclus = arg
       elif opt in ("-s", "--simultaneous"):
         csimul = arg
@@ -160,10 +160,12 @@ def main(argv):
         lstfile.write("%s\n" % item)
       lstfile.close()
       print("## File created on " + os.getcwd() + "/links.txt")
-    else:
+      if extract == True:
+        inputFile = "links.txt"
+        extractor(website, outputFile, inputFile)
+    else: 
       # TODO: Set verbose variable in extractor
       extractor(website, outputFile, inputFile)
-      
 if __name__ == "__main__":
     main(sys.argv[1:])
 

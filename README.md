@@ -49,7 +49,7 @@ arg | Long | Description
 -w  |--without| Without the use of TOR
 **Extract**: | | 
 -e  |--extract| Extract page's code to terminal or file. 
-~~-i~~  |~~--input~~| ~~Input file with URL(s)~~
+-i  |--input| Input file with URL(s)
 -o  |--output| Output page(s) to file(s)
 **Crawl**: | |
 -c  |--crawl| Crawl website
@@ -58,7 +58,7 @@ arg | Long | Description
 ~~-s~~  |~~--simultaneous~~| ~~How many pages to visit at the same time~~
 ~~-p~~  |--pause| The length of time the crawler will pause
 ~~-l~~  |~~--log~~| ~~A save log will let you see which URLs were visited~~
-*every argument with overline is still in development*
+* every argument with overline is coming soon*
 
 ## Usage:
 

@@ -35,6 +35,7 @@ Crawl:
 '''
 
 import sys
+import os
 import re
 import getopt
 import socket
@@ -45,8 +46,10 @@ from json import load
 from collections import namedtuple
 
 # TorCrawl Modules
-from modules.crawler import *
-from modules.extractor import *
+from modules.crawler import crawler
+from modules.extractor import extractor
+# TODO: Move checkers into another file
+#from modules.check import checker
 
 # Check if TOR service is running
 def checkTor():
@@ -87,16 +90,20 @@ def checkIP():
 
 
 def main(argv):
+    extract = True
     verbose = False
     withoutTor = False
     outputToFile = False
     crawl = False
     cdepth = 1
-    simultaneous = 1
     cpause = 0
+    simultaneous = 1
+    website = ''
+    outputFile = ''
+    inputFile = ''
 
     try:
-      opts, args = getopt.getopt(argv,"hvcu:wo:d:p:",["help","verbose","url=","without","output=","crawl=","pause="])
+      opts, args = getopt.getopt(argv,'hvu:wei:o:cd:p:',["help","verbose","url=","without","extract","input=","output=","crawl","depth=","pause="])
     except getopt.GetoptError:
       print('usage: torcrawl.py -h -v -w -u <fullPath> -o <outputFile>')
       sys.exit(2)
@@ -108,20 +115,18 @@ def main(argv):
         sys.exit()
       elif opt in ("-v", "--verbose"):
         verbose = True
-      elif opt in ("-u", "--url"):
+      elif opt in ("-u", "--url2"):
         website = arg
       elif opt in ("-w", "--without"):
         withoutTor = True
-      elif opt in ("-o", "--output"):
-        outputFile = arg
-        outputToFile = True
 
       # Extract
       elif opt in ("-e", "--extract"):
         extract = True
       elif opt in ("-i", "--input"):
         inputFile = arg
-        inputFromFile = True
+      elif opt in ("-o", "--output"):
+        outputFile = arg
 
       # Crawl
       elif opt in ("-c", "--crawl"):
@@ -137,6 +142,7 @@ def main(argv):
       elif opt in ("-l", "--log"):
         logs = True
         
+
     if withoutTor == False:
       if verbose == True:
         checkTor()
@@ -147,21 +153,17 @@ def main(argv):
       checkIP()
     
     if crawl == True:
-        lst = crawler(website, cdepth, cpause)
-        lstfile = open('links.txt', 'w+')
-        for item in lst:
-          lstfile.write("%s\n" % item)
-        lstfile.close()
-        print("## File created on " + os.getcwd() + "/links.txt")
+      # TODO: Set verbose variable in crawler
+      lst = crawler(website, cdepth, cpause)
+      lstfile = open('links.txt', 'w+')
+      for item in lst:
+        lstfile.write("%s\n" % item)
+      lstfile.close()
+      print("## File created on " + os.getcwd() + "/links.txt")
     else:
-      if outputToFile == True:
-        if verbose == True:
-          print('## Filename: ' + outputFile)
-        extractorFile(outputFile, website)
-      else:
-        extractor(website)
-
-
+      # TODO: Set verbose variable in extractor
+      extractor(website, outputFile, inputFile)
+      
 if __name__ == "__main__":
     main(sys.argv[1:])
 

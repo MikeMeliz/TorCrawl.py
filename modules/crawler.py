@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import os
 import sys
 import re
 import urllib2
@@ -88,9 +89,24 @@ def crawler(website, cdepth, cpause):
           verlink = canonical(link, website)
           lst.add(verlink)
         
-        # For each <img src="">
+        # TODO: For each <img src="">
+        # for img in soup.findAll('img')
+        #   img = link.get('src')
+        #   if imgexludes(link, website)
+        #     continue
+        #
+        #   verlink = imgcanonical(link, website)
+        #    lst.add(verlink)
 
-        # For ech <script src="">
+        # TODO: For each <script src="">
+        # for link in soup.findAll('a'):        
+        #   link = link.get('href')
+        #   
+        #   if excludes(link, website):
+        #     continue
+        #   
+        #   verlink = canonical(link, website)
+        #   lst.add(verlink)
 
         # Pass new on list and re-set it to delete duplicates
         ordlst = ordlst + list(set(lst))
@@ -105,6 +121,5 @@ def crawler(website, cdepth, cpause):
 
       print("## Step " + str(x+1) + " completed with: " + str(len(ordlst)) + " results")
 
-    # TODO: Order the list
-
+    ordlst.sort()
     return ordlst

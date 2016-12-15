@@ -91,6 +91,7 @@ def checkIP():
 
 def main(argv):
     extract = True
+    extractarg = False
     verbose = False
     withoutTor = False
     outputToFile = False
@@ -115,14 +116,14 @@ def main(argv):
         sys.exit()
       elif opt in ("-v", "--verbose"):
         verbose = True
-      elif opt in ("-u", "--url2"):
+      elif opt in ("-u", "--url"):
         website = arg
       elif opt in ("-w", "--without"):
         withoutTor = True
 
       # Extract
       elif opt in ("-e", "--extract"):
-        extract = True
+        extractarg = True
       elif opt in ("-i", "--input"):
         inputFile = arg
       elif opt in ("-o", "--output"):
@@ -160,7 +161,7 @@ def main(argv):
         lstfile.write("%s\n" % item)
       lstfile.close()
       print("## File created on " + os.getcwd() + "/links.txt")
-      if extract == True:
+      if extractarg == True:
         inputFile = "links.txt"
         extractor(website, outputFile, inputFile)
     else: 

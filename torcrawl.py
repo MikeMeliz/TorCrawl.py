@@ -36,32 +36,14 @@ Crawl:
 
 import sys
 import os
-import re
 import getopt
 import socket
 import socks
-import subprocess
-from urllib2 import urlopen
-from json import load
-from collections import namedtuple
 
 # TorCrawl Modules
 from modules.crawler import crawler
 from modules.extractor import extractor
-# TODO: Move checkers into another file
-#from modules.check import checker
-
-# Check if TOR service is running
-def checkTor():
-    checkTor = subprocess.check_output(['ps', '-e'])
-    def findWholeWord(w):
-      return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
-    if findWholeWord('tor')(checkTor):
-      print("## TOR is ready!")
-    else:
-      print("## TOR is NOT running!")
-      print('## Enable tor with \'service tor start\' or add -w argument')
-      sys.exit(2)
+from modules.checker import *
 
 # Set socket and connection with TOR network
 def connectTor():
@@ -77,16 +59,6 @@ def connectTor():
     except:
       e = sys.exc_info()[0]
       print( "Error: %s" % e +"\n## Can't establish connection with TOR")
-
-# Check your IP from external website
-def checkIP():
-    try:
-      webIPcheck = 'https://api.ipify.org/?format=json'
-      my_ip = load(urlopen(webIPcheck))['ip']
-      print '## Your IP: ' + my_ip
-    except:
-      e = sys.exc_info()[0]
-      print( "Error: %s" % e + "\n## IP can't obtain \n## Is " + webIPcheck + "up?")
 
 
 def main(argv):

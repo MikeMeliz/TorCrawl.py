@@ -10,8 +10,8 @@
 ## Basic Information:
 TorCrawl.py is a python script to crawl and extract (regular or onion) webpages through TOR network. 
 
-> **Warning:** Crawling is not illegal, but violating copyright is. It’s always best to double check a website’s T&C before crawling them. Some websites set up what’s called robots.txt to tell crawlers not to visit those pages. This crawler will allow you to go around this, but we always recommend respecting robots.txt.
-> **Keep in mind:** Extracting and crawling through TOR network take some time. That's normal behaviour; you can find more information [here](https://www.torproject.org/docs/faq.html.en#WhySlow). 
+- **Warning:** Crawling is not illegal, but violating copyright is. It’s always best to double check a website’s T&C before crawling them. Some websites set up what’s called robots.txt to tell crawlers not to visit those pages. This crawler will allow you to go around this, but we always recommend respecting robots.txt.
+- **Keep in mind:** Extracting and crawling through TOR network take some time. That's normal behaviour; you can find more information [here](https://www.torproject.org/docs/faq.html.en#WhySlow). 
 
 ### What make it simple?
 If you are a terminal maniac you know that things have to be simple and clear. Passing output into other tools is necessary and accuracy is the key.
@@ -58,7 +58,7 @@ arg | Long | Description
 ~~-s~~  |~~--simultaneous~~| ~~How many pages to visit at the same time~~
 ~~-p~~  |--pause| The length of time the crawler will pause
 ~~-l~~  |~~--log~~| ~~A save log will let you see which URLs were visited~~
-* every argument with overline is coming soon*
+*every argument with overline is coming soon*
 
 ## Usage:
 
@@ -72,43 +72,86 @@ $ python torcrawl.py -u http://www.github.com
 </html>
 ```
 
-Extract into a file (github.htm) without the use of TOR
+Extract into a file (github.htm) without the use of TOR:
 
 ```
 $ python torcrawl.py -w -u http://www.github.com -o github.htm
 ## File created on /script/path/github.htm
 ```
 
-Extract to terminal and find only the line with google-analytics
+Extract to terminal and find only the line with google-analytics:
 
 ```
 $ python torcrawl.py -u http://www.github.com | grep 'google-analytics'
     <meta name="google-analytics" content="UA-*******-*">
 ```
 
-### As Crawler:
-Crawl the links of the webpage without the use of TOR,
-also show verbose output (really helpfull)
+Extract a set of webpages (imported from file) to terminal:
 
 ```
-$ python torcrawl.py -v -w -u http://www.github.com -c
-## URL: http://www.github.com
+$ python torcrawl.py -i links.txt
+```
+
+Extract a set of webpages (imported from file) to a folder (`-v` shows verbose output):
+
+```
+$ python torcrawl.py -v -i links.txt -o FolderName
+## TOR is ready!
+## URL: -
 ## Your IP: *.*.*.*
-## Crawler Started from http://www.github.com with step 1 and wait 0
+## File created on /script/path/FolderName/index.htm
+## File created on /script/path/FolderName/aboutus.html
+## File created on /script/path/FolderName/gallery.html
+```
+
+### As Crawler:
+Crawl the links of the webpage without the use of TOR,
+also show verbose output (really helpfull):
+
+```
+$ python torcrawl.py -v -w -u http://www.github.com/ -c
+## URL: http://www.github.com/
+## Your IP: *.*.*.*
+## Crawler Started from http://www.github.com/ with step 1 and wait 0
 ## Step 1 completed with: 11 results
 ## File created on /script/path/links.txt
 ```
 
-Crawl the webpage with depth 2 (2 clicks) and 5 seconds waiting before crawl the next page
+Crawl the webpage with depth 2 (2 clicks) and 5 seconds waiting before crawl the next page:
 
 ```
-$ python torcrawl.py -v -u http://www.github.com -c -d 2 -p 5
-## URL: http://www.github.com
+$ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5
+## TOR is ready!
+## URL: http://www.github.com/
 ## Your IP: *.*.*.*
 ## Crawler Started from http://www.github.com with step 2 and wait 5
 ## Step 1 completed with: 11 results
 ## Step 2 completed with: 112 results
 ## File created on /script/path/links.txt
+```
+### As Both:
+You can crawl a page and also extract the webpages into a folder with a single command:
+
+```
+$ python torcrawl.py -v -u http://www.github.com/ -c -e -i links.txt -o FolderName
+## TOR is ready!
+## URL: http://www.github.com/
+## Your IP: *.*.*.*
+## Crawler Started from http://www.github.com with step 1 and wait 0
+## Step 1 completed with: 11 results
+## File created on /script/path/FolderName/index.htm
+## File created on /script/path/FolderName/projects.html
+## ...
+```
+***Note:*** *The default (and only for now) file for crawler's links is the `links.txt` document. Also, to extract right after the crawl you have to give `-e` argument*
+
+With the same logic you can parse all these pages to grep (for example) and search for a specific text:
+
+```
+$ python torcrawl.py -u http://www.github.com/ -c -e -i links.txt | grep '</html>'
+</html>
+</html>
+...
 ```
 
 ## Contributors:

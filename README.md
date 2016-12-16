@@ -138,7 +138,7 @@ $ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5 -e
 With the same logic you can parse all these pages to grep (for example) and search for a specific text:
 
 ```
-$ python torcrawl.py -u http://www.github.com/ -c -e -i links.txt | grep '</html>'
+$ python torcrawl.py -u http://www.github.com/ -c -e | grep '</html>'
 </html>
 </html>
 ...

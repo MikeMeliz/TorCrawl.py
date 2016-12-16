@@ -90,19 +90,9 @@ Extract a set of webpages (imported from file) to terminal:
 
 ```
 $ python torcrawl.py -i links.txt
+...
 ```
 
-Extract a set of webpages (imported from file) to a folder (`-v` shows verbose output):
-
-```
-$ python torcrawl.py -v -i links.txt -o FolderName
-## TOR is ready!
-## URL: -
-## Your IP: *.*.*.*
-## File created on /script/path/FolderName/index.htm
-## File created on /script/path/FolderName/aboutus.html
-## File created on /script/path/FolderName/gallery.html
-```
 
 ### As Crawler:
 Crawl the links of the webpage without the use of TOR,
@@ -133,7 +123,7 @@ $ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5
 You can crawl a page and also extract the webpages into a folder with a single command:
 
 ```
-$ python torcrawl.py -v -u http://www.github.com/ -c -e -i links.txt -o FolderName
+$ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5 -e
 ## TOR is ready!
 ## URL: http://www.github.com/
 ## Your IP: *.*.*.*

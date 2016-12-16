@@ -1,37 +1,41 @@
 #!/usr/bin/python
 
 help='''
-Basic Information:
-TorCrawl.py is a python script to crawl and extract (regular or onion)
+
+TorCrawl.py is a python script to crawl and extract (regular or onion) 
 webpages through TOR network. 
 
-Examples:
-python torcrawl.py -u http://www.github.com 
+usage: python torcrawl.py [options]
+python torcrawl.py -u l0r3m1p5umD0lorS1t4m3t.onion 
 python torcrawl.py -v -w -u http://www.github.com -o github.htm 
-python torcrawl.py -u http://www.github.com | grep 'google-analytics'
-python torcrawl.py -v -w -u http://www.github.com -c 
+python torcrawl.py -v -u l0r3m1p5umD0lorS1t4m3t.onion -c -d 2 -p 5
+python torcrawl.py -v -w -u http://www.github.com -c -d 2 -p 5 -e -o GitHub
 
 General:
--h, --help        : Help
--v, --verbose     : Show steps
--u, --url         : URL of Webpage to crawl or extract
--w, --without     : Without the use of Relay TOR (default ON) 
+-h, --help         : Help
+-v, --verbose      : Show more informations about the progress
+-u, --url *.onion  : URL of Webpage to crawl or extract
+-w, --without      : Without the use of Relay TOR 
 
 Extract:
--e, --extract     : Extract page's code to terminal or file.
-                    By default, if you don't specify a mode, the
-                    script will try to extract the page(s)
--i, --input       : Input file with URL(s)
--o, --output      : Output page(s) to file(s)
+-e, --extract           : Extract page's code to terminal or file.
+                          (Defualt: terminal)
+-i, --input filename    : Input file with URL(s) (seperated by line)
+-o, --output [filename] : Output page(s) to file(s) (for one page)
 
 Crawl:
--c, --crawl       : Crawl website
--d, --cdepth      : Set depth of crawl's travel (1-5)
--e, --exclusions  : Paths that you don't want to include
--s, --simultaneous: How many pages to visit at the same time
--p, --pause       : The length of time the crawler will pause
+-c, --crawl       : Crawl website (Default output on /links.txt)
+-d, --cdepth      : Set depth of crawl's travel (Default: 1)
+-z, --exclusions  : Paths that you don't want to include (TODO)
+-s, --simultaneous: How many pages to visit at the same time (TODO)
+-p, --pause       : The length of time the crawler will pause 
+                    (Default: 0)
 -l, --log         : A save log will let you see which URLs were
-                    visited
+                    visited (TODO)
+
+GitHub: github.com/MikeMeliz/TorCrawl.py
+License: GNU General Public License v3.0
+
 '''
 
 import sys
@@ -63,17 +67,10 @@ def connectTor():
 
 def main(argv):
     extract = True
-    extractarg = False
-    verbose = False
-    withoutTor = False
-    outputToFile = False
-    crawl = False
-    cdepth = 1
+    extractarg, verbose, withoutTor, outputToFile, crawl = [False] * 5
+    cdepth = simultaneous = 1
     cpause = 0
-    simultaneous = 1
-    website = ''
-    outputFile = ''
-    inputFile = ''
+    website = outputFile = inputFile = outpath = ''
 
     try:
       opts, args = getopt.getopt(argv,'hvu:wei:o:cd:p:',["help","verbose","url=","without","extract","input=","output=","crawl","depth=","pause="])
@@ -81,7 +78,7 @@ def main(argv):
       print('usage: torcrawl.py -h -v -w -u <fullPath> -o <outputFile>')
       sys.exit(2)
     for opt, arg in opts:
-      
+
       # General
       if opt in ("-h", "--help"):
         print help
@@ -117,28 +114,43 @@ def main(argv):
         
 
     if withoutTor == False:
-      if verbose == True:
-        checkTor()
+      checkTor(verbose)
       connectTor()
-
-    if verbose == True:
-      print('## URL: ' + website)
-      checkIP()
     
+    if verbose == True:
+      checkIP()
+      print('## URL: ' + website)
+    
+    #Create output path
+    def folder(website):
+      if website.startswith('http'):
+        outpath = website.replace("http://","")
+      if website.startswith('https'):
+        outpath = website.replace("https://","")
+      if outpath.endswith('/'):
+        outpath = outpath[:-1]
+      if not os.path.exists(outpath):
+        os.makedirs(outpath)
+      return outpath
+
+    if len(website) > 0:
+      outpath = folder(website)
+      if verbose == True:
+        print("## Output Path: " + outpath)
+
     if crawl == True:
       # TODO: Set verbose variable in crawler
-      lst = crawler(website, cdepth, cpause)
-      lstfile = open('links.txt', 'w+')
+      lst = crawler(website, cdepth, cpause, outpath, verbose)
+      lstfile = open(outpath + '/links.txt', 'w+')
       for item in lst:
         lstfile.write("%s\n" % item)
       lstfile.close()
-      print("## File created on " + os.getcwd() + "/links.txt")
+      print("## File created on " + os.getcwd() + "/" + outpath + "/links.txt")
       if extractarg == True:
-        inputFile = "links.txt"
-        extractor(website, outputFile, inputFile)
+        inputFile = outpath + "/links.txt"
+        extractor(website, crawl, outputFile, inputFile, outpath, verbose)
     else: 
       # TODO: Set verbose variable in extractor
-      extractor(website, outputFile, inputFile)
+      extractor(website, crawl, outputFile, inputFile, outpath, verbose)
 if __name__ == "__main__":
     main(sys.argv[1:])
-

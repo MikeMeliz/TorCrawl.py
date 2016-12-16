@@ -8,8 +8,8 @@ import time
 from BeautifulSoup import BeautifulSoup
 
 # Exclude links that we dont need
-def excludes(link, website):
-    # For NoneType Exceptions, got to find a solution here
+def excludes(link, website, outpath):
+    # BUG: For NoneType Exceptions, got to find a solution here
     if link == None:
       return True
     # #links
@@ -17,12 +17,21 @@ def excludes(link, website):
       return True
     # External links
     elif link.startswith('http') and not link.startswith(website):
+      lstfile = open(outpath + '/extlinks.txt', 'w+')
+      lstfile.write(link.encode('utf-8') + "\n")
+      lstfile.close()
       return True
     # Telephone Number
     elif link.startswith('tel:'):
+      lstfile = open(outpath + '/telephones.txt', 'w+')
+      lstfile.write(link.encode('utf-8') + "\n")
+      lstfile.close()
       return True
     # Mails
     elif link.startswith('mailto:'):
+      lstfile = open(outpath + '/mails.txt', 'w+')
+      lstfile.write(link.encode('utf-8') + "\n")
+      lstfile.close()
       return True
     # Type of files
     elif re.search('^.*\.(pdf|jpg|jpeg|png|doc)$', link, re.IGNORECASE):
@@ -52,12 +61,13 @@ def canonical(link, website):
 
 
 # Core of crawler
-def crawler(website, cdepth, cpause):
+def crawler(website, cdepth, cpause, outpath, verbose):
     lst = set()
     ordlst = []
     ordlst.insert(0, website)
     ordlstind = 0
     idx = 0
+    
     
     print("## Crawler Started from " + website + " with step " + str(cdepth) + " and wait " + str(cpause))
     
@@ -83,7 +93,7 @@ def crawler(website, cdepth, cpause):
         for link in soup.findAll('a'):        
           link = link.get('href')
           
-          if excludes(link, website):
+          if excludes(link, website, outpath):
             continue
           
           verlink = canonical(link, website)
@@ -112,8 +122,9 @@ def crawler(website, cdepth, cpause):
         ordlst = ordlst + list(set(lst))
         ordlst = list(set(ordlst))
         
-        sys.stdout.write("-- Results: " + str(len(ordlst)) + "\r")
-        sys.stdout.flush()
+        if verbose == True:
+          sys.stdout.write("-- Results: " + str(len(ordlst)) + "\r")
+          sys.stdout.flush()
 
         # Pause time
         if (ordlst.index(item) != len(ordlst)-1) and cpause > 0:

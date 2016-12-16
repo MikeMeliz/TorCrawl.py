@@ -5,12 +5,10 @@ import sys
 import urllib2
 
 # Input links from file and extract them into path/files
-def inoutex(website, outputFile, inputFile):
+def cinex(website, inputFile, outpath):
     try:
       f = open(inputFile,'r')
-      newpath = outputFile
-      if not os.path.exists(newpath):
-        os.makedirs(newpath)
+      #print f
     except:
       e = sys.exc_info()[0]
       print("Error: %s" % e + "\n## Can't open " + inputFile)
@@ -28,10 +26,10 @@ def inoutex(website, outputFile, inputFile):
 
       # Extract page to file
       try:
-        f = open(newpath + "/" + outputFile,'w')
+        f = open(outpath + "/" + outputFile,'w')
         f.write(urllib2.urlopen(line).read())
         f.close()
-        print("## File created on " + os.getcwd() + "/" + newpath + "/" + outputFile)
+        print("## File created on " + os.getcwd() + "/" + outpath + "/" + outputFile)
       except:
         e = sys.exc_info()[0]
         print("Error: %s" % e + "\n Can't write on file " + outputFile)
@@ -47,9 +45,10 @@ def intermex(inputFile):
       print("Error: %s" % e + "\n## Not valid file")
 
 # Output webpage into a file
-def outex(website, outputFile):
+def outex(website, outputFile, outpath):
     # Extract page to file
     try:
+      outputFile = outpath + "/" + outputFile
       f = open(outputFile,'w')
       f.write(urllib2.urlopen(website).read())
       f.close()
@@ -67,15 +66,18 @@ def termex(website):
       print("Error: %s" % e + "\n## Not valid URL \n## Did you forget \'http://\'?")
 
 
-def extractor(website, outputFile, inputFile):
+def extractor(website, crawl, outputFile, inputFile, outpath, verbose):
     if len(inputFile) > 0:
-      if len(outputFile) > 0:
-        inoutex(website, outputFile, inputFile)
+      if crawl == True:
+        cinex(website, inputFile, outpath)
+      # TODO: Extract from list into a folder
+      #elif len(outputFile) > 0:
+        # inoutex(website, inputFile, outputFile)
       else:
         intermex(inputFile)
     else:
       if len(outputFile) > 0:
-        outex(website, outputFile)
+        outex(website, outputFile, outpath)
       else:
         termex(website)
 

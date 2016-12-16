@@ -44,19 +44,19 @@ arg | Long | Description
 ----|------|------------
 **General**: | |
 -h  |--help| Help
--v  |--verbose| Verbose output 
--u  |--url | URL of Webpage
--w  |--without| Without the use of TOR
+-v  |--verbose| Show more informations about the progress 
+-u  |--url *.onion| URL of Webpage to crawl or extract
+-w  |--without| Without the use of Relay TOR
 **Extract**: | | 
--e  |--extract| Extract page's code to terminal or file. 
--i  |--input| Input file with URL(s)
--o  |--output| Output page(s) to file(s)
+-e  |--extract| Extract page's code to terminal or file. (Default: Terminal)
+-i  |--input filename| Input file with URL(s) (seperated by line)
+-o  |--output [filename]| Output page(s) to file(s) (for one page)
 **Crawl**: | |
--c  |--crawl| Crawl website
--d  |--cdepth| Set depth of crawl's travel (1-5)
+-c  |--crawl| Crawl website (Default output on /links.txt)
+-d  |--cdepth| Set depth of crawl's travel (Default: 1)
 ~~-z~~  |~~--exclusions~~| ~~Paths that you don't want to include~~
 ~~-s~~  |~~--simultaneous~~| ~~How many pages to visit at the same time~~
-~~-p~~  |--pause| The length of time the crawler will pause
+~~-p~~  |--pause| The length of time the crawler will pause (Default: 0)
 ~~-l~~  |~~--log~~| ~~A save log will let you see which URLs were visited~~
 *every argument with overline is coming soon*
 

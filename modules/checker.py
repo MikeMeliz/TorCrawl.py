@@ -6,6 +6,18 @@ import subprocess
 from urllib2 import urlopen
 from json import load
 
+#Create output path
+def folder(website):
+    if website.startswith('http'):
+      outpath = website.replace("http://","")
+    if website.startswith('https'):
+      outpath = website.replace("https://","")
+    if outpath.endswith('/'):
+      outpath = outpath[:-1]
+    if not os.path.exists(outpath):
+      os.makedirs(outpath)
+    return outpath
+
 # Check if TOR service is running
 def checkTor(verbose):
     checkTor = subprocess.check_output(['ps', '-e'])

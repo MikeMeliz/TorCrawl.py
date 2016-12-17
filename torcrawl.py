@@ -120,26 +120,14 @@ def main(argv):
     if verbose == True:
       checkIP()
       print('## URL: ' + website)
-    
-    #Create output path
-    def folder(website):
-      if website.startswith('http'):
-        outpath = website.replace("http://","")
-      if website.startswith('https'):
-        outpath = website.replace("https://","")
-      if outpath.endswith('/'):
-        outpath = outpath[:-1]
-      if not os.path.exists(outpath):
-        os.makedirs(outpath)
-      return outpath
 
+    # Create path for output
     if len(website) > 0:
       outpath = folder(website)
       if verbose == True:
         print("## Output Path: " + outpath)
 
     if crawl == True:
-      # TODO: Set verbose variable in crawler
       lst = crawler(website, cdepth, cpause, outpath, verbose)
       lstfile = open(outpath + '/links.txt', 'w+')
       for item in lst:
@@ -150,7 +138,6 @@ def main(argv):
         inputFile = outpath + "/links.txt"
         extractor(website, crawl, outputFile, inputFile, outpath, verbose)
     else: 
-      # TODO: Set verbose variable in extractor
       extractor(website, crawl, outputFile, inputFile, outpath, verbose)
 if __name__ == "__main__":
     main(sys.argv[1:])

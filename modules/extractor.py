@@ -72,7 +72,7 @@ def extractor(website, crawl, outputFile, inputFile, outpath, verbose):
         cinex(website, inputFile, outpath)
       # TODO: Extract from list into a folder
       #elif len(outputFile) > 0:
-        # inoutex(website, inputFile, outputFile)
+      # inoutex(website, inputFile, outputFile)
       else:
         intermex(inputFile)
     else:

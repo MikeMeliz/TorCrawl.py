@@ -112,18 +112,20 @@ def main(argv):
       elif opt in ("-l", "--log"):
         logs = True
         
-
+    # Connect to TOR
     if withoutTor == False:
       checkTor(verbose)
       connectTor()
     
+    website = urlcanon(website, verbose)
+
     if verbose == True:
       checkIP()
       print('## URL: ' + website)
 
     # Create path for output
     if len(website) > 0:
-      outpath = folder(website)
+      outpath = folder(website, verbose)
       if verbose == True:
         print("## Output Path: " + outpath)
 

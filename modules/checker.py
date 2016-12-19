@@ -3,11 +3,22 @@
 import sys
 import re
 import subprocess
+import os
 from urllib2 import urlopen
 from json import load
 
+# Canonicalization of URL
+def urlcanon(website, verbose):
+    if not website.startswith("http"):
+      if not website.startswith("www."):
+        website = "www." + website
+      website = "http://" + website
+    if verbose == True:
+      print("## URL fixed: " + website)
+    return website
+
 #Create output path
-def folder(website):
+def folder(website, verbose):
     if website.startswith('http'):
       outpath = website.replace("http://","")
     if website.startswith('https'):
@@ -16,6 +27,8 @@ def folder(website):
       outpath = outpath[:-1]
     if not os.path.exists(outpath):
       os.makedirs(outpath)
+    if verbose == True:
+      print("## Folder created: " + outpath)
     return outpath
 
 # Check if TOR service is running

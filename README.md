@@ -127,7 +127,7 @@ $ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5 -e
 ## TOR is ready!
 ## URL: http://www.github.com/
 ## Your IP: *.*.*.*
-## Crawler Started from http://www.github.com with step 1 and wait 0
+## Crawler Started from http://www.github.com with step 1 and wait 5
 ## Step 1 completed with: 11 results
 ## File created on /script/path/FolderName/index.htm
 ## File created on /script/path/FolderName/projects.html

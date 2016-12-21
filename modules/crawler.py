@@ -34,7 +34,7 @@ def excludes(link, website, outpath):
       lstfile.close()
       return True
     # Type of files
-    elif re.search('^.*\.(pdf|jpg|jpeg|png|doc)$', link, re.IGNORECASE):
+    elif re.search('^.*\.(pdf|jpg|jpeg|png|gif|doc)$', link, re.IGNORECASE):
       return True
 
 # Canonicalization of the link

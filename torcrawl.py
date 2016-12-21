@@ -117,17 +117,14 @@ def main(argv):
       checkTor(verbose)
       connectTor()
     
-    website = urlcanon(website, verbose)
-
     if verbose == True:
       checkIP()
       print('## URL: ' + website)
 
-    # Create path for output
+    # Canon/ion of website and create path for output 
     if len(website) > 0:
+      website = urlcanon(website, verbose)
       outpath = folder(website, verbose)
-      if verbose == True:
-        print("## Output Path: " + outpath)
 
     if crawl == True:
       lst = crawler(website, cdepth, cpause, outpath, logs, verbose)

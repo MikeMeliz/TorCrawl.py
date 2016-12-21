@@ -12,9 +12,11 @@ def urlcanon(website, verbose):
     if not website.startswith("http"):
       if not website.startswith("www."):
         website = "www." + website
+        if verbose == True:
+          print("## URL fixed: " + website)
       website = "http://" + website
-    if verbose == True:
-      print("## URL fixed: " + website)
+      if verbose == True:
+        print("## URL fixed: " + website)
     return website
 
 #Create output path

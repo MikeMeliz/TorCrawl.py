@@ -67,15 +67,15 @@ def connectTor():
 
 def main(argv):
     extract = True
-    extractarg, verbose, withoutTor, outputToFile, crawl = [False] * 5
+    extractarg, verbose, withoutTor, outputToFile, crawl, logs = [False] * 6
     cdepth = simultaneous = 1
     cpause = 0
     website = outputFile = inputFile = outpath = ''
 
     try:
-      opts, args = getopt.getopt(argv,'hvu:wei:o:cd:p:',["help","verbose","url=","without","extract","input=","output=","crawl","depth=","pause="])
+      opts, args = getopt.getopt(argv,'hvu:wei:o:cd:p:l',["help","verbose","url=","without","extract","input=","output=","crawl","depth=","pause=","log"])
     except getopt.GetoptError:
-      print('usage: torcrawl.py -h -v -w -u <fullPath> -o <outputFile>')
+      print('usage: torcrawl.py [options]')
       sys.exit(2)
     for opt, arg in opts:
 
@@ -130,7 +130,7 @@ def main(argv):
         print("## Output Path: " + outpath)
 
     if crawl == True:
-      lst = crawler(website, cdepth, cpause, outpath, verbose)
+      lst = crawler(website, cdepth, cpause, outpath, logs, verbose)
       lstfile = open(outpath + '/links.txt', 'w+')
       for item in lst:
         lstfile.write("%s\n" % item)

@@ -61,13 +61,15 @@ def canonical(link, website):
 
 
 # Core of crawler
-def crawler(website, cdepth, cpause, outpath, verbose):
+def crawler(website, cdepth, cpause, outpath, logs, verbose):
     lst = set()
     ordlst = []
     ordlst.insert(0, website)
     ordlstind = 0
     idx = 0
     
+    if logs == True:
+      logfile = open(outpath + '/log.txt', 'w+')
     
     print("## Crawler Started from " + website + " with step " + str(cdepth) + " and wait " + str(cpause))
     
@@ -87,6 +89,7 @@ def crawler(website, cdepth, cpause, outpath, verbose):
         else:
           html_page = urllib2.urlopen(website)
           ordlstind += 1
+
         soup = BeautifulSoup(html_page)
         
         # For each <a href=""> tag
@@ -130,7 +133,14 @@ def crawler(website, cdepth, cpause, outpath, verbose):
         if (ordlst.index(item) != len(ordlst)-1) and cpause > 0:
           time.sleep(float(cpause))
 
+        # Keeps logs for every webpage visited
+        if logs == True:
+          logfile.write("%s\n" % item)
+
       print("## Step " + str(x+1) + " completed with: " + str(len(ordlst)) + " results")
+
+    if logs == True:
+      logfile.close()
 
     ordlst.sort()
     return ordlst

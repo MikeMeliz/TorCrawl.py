@@ -56,8 +56,8 @@ arg | Long | Description
 -d  |--cdepth| Set depth of crawl's travel (Default: 1)
 ~~-z~~  |~~--exclusions~~| ~~Paths that you don't want to include~~
 ~~-s~~  |~~--simultaneous~~| ~~How many pages to visit at the same time~~
-~~-p~~  |--pause| The length of time the crawler will pause (Default: 0)
-~~-l~~  |~~--log~~| ~~A save log will let you see which URLs were visited~~
+-p  |--pause| The length of time the crawler will pause (Default: 0)
+-l  |--log| A save log will let you see which URLs were visited
 *every argument with overline is coming soon*
 
 ## Usage:

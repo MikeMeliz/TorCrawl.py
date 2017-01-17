@@ -103,10 +103,6 @@ def main(argv):
         crawl = True
       elif opt in ("-d", "--cdepth"):
         cdepth = arg
-      elif opt in ("-z", "--exclusions"):
-        cexclus = arg
-      elif opt in ("-s", "--simultaneous"):
-        csimul = arg
       elif opt in ("-p", "--pause"):
         cpause = arg
       elif opt in ("-l", "--log"):

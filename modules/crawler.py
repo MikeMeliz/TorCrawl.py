@@ -109,16 +109,16 @@ def crawler(website, cdepth, cpause, outpath, logs, verbose):
         #     continue
         #
         #   verlink = imgcanonical(link, website)
-        #    lst.add(verlink)
+        #   lst.add(verlink)
 
         # TODO: For each <script src="">
-        # for link in soup.findAll('a'):        
-        #   link = link.get('href')
+        # for link in soup.findAll('script'):        
+        #   link = link.get('src')
         #   
-        #   if excludes(link, website):
+        #   if screxcludes(link, website):
         #     continue
         #   
-        #   verlink = canonical(link, website)
+        #   verlink = scrcanonical(link, website)
         #   lst.add(verlink)
 
         # Pass new on list and re-set it to delete duplicates

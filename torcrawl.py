@@ -49,9 +49,6 @@ from modules.crawler import crawler
 from modules.extractor import extractor
 from modules.checker import *
 
-# TODO[G]: Make GUI with Gooey after impl/ion of argparse
-#from gooey import Gooey, GooeyParser
-
 # Set socket and connection with TOR network
 def connectTor():
     try:
@@ -67,8 +64,8 @@ def connectTor():
       e = sys.exc_info()[0]
       print( "Error: %s" % e +"\n## Can't establish connection with TOR")
 
-# TODO[G]: @Gooey
-def main(argv):
+
+def main():
     # Initialize nececery variables
     inputFile = outputFile = ''
     cpause = 0
@@ -77,20 +74,46 @@ def main(argv):
     # Get arguments with argparse
     parser = argparse.ArgumentParser(description="TorCrawl.py is a python script to crawl and extract (regular or onion) webpages through TOR network.")
     # General
-    parser.add_argument('-v','--verbose', action='store_true', help='Show more informations about the progress')
-    parser.add_argument('-u','--url', required=True, help='URL of Webpage to crawl or extract')
-    parser.add_argument('-w','--without', action='store_true', help='Without the use of Relay TOR')
+    parser.add_argument('-v',
+                        '--verbose', 
+                        action='store_true', 
+                        help='Show more informations about the progress')
+    parser.add_argument('-u',
+                        '--url', 
+                        required=True, 
+                        help='URL of Webpage to crawl or extract')
+    parser.add_argument('-w',
+                        '--without', 
+                        action='store_true', 
+                        help='Without the use of Relay TOR')
     # Extract
-    parser.add_argument('-e','--extract', action='store_true', help='Extract page\'s code to terminal or file.')
-    parser.add_argument('-i','--input', help='Input file with URL(s) (seperated by line)')
-    parser.add_argument('-o','--output', help='Output page(s) to file(s) (for one page)')
+    parser.add_argument('-e',
+                        '--extract', 
+                        action='store_true', 
+                        help='Extract page\'s code to terminal or file.')
+    parser.add_argument('-i',
+                        '--input', 
+                        help='Input file with URL(s) (seperated by line)')
+    parser.add_argument('-o',
+                        '--output', 
+                        help='Output page(s) to file(s) (for one page)')
     # Crawl
-    parser.add_argument('-c','--crawl', action='store_true', help='Crawl website (Default output on /links.txt)')
-    parser.add_argument('-d','--cdepth', help='Set depth of crawl\'s travel (Default: 1)')
+    parser.add_argument('-c',
+                        '--crawl', 
+                        action='store_true', 
+                        help='Crawl website (Default output on /links.txt)')
+    parser.add_argument('-d',
+                        '--cdepth', 
+                        help='Set depth of crawl\'s travel (Default: 1)')
     #parser.add_argument('-z','--exclusions' help='Paths that you don\'t want to include')
     #parser.add_argument('-s','--simultaneous' help='How many pages to visit at the same time')
-    parser.add_argument('-p','--pause', help='The length of time the crawler will pause')
-    parser.add_argument('-l','--log', action='store_true', help='A save log will let you see which URLs were visited')
+    parser.add_argument('-p',
+                        '--pause', 
+                        help='The length of time the crawler will pause')
+    parser.add_argument('-l',
+                        '--log', 
+                        action='store_true', 
+                        help='A save log will let you see which URLs were visited')
 
     args = parser.parse_args()
 
@@ -125,9 +148,9 @@ def main(argv):
       print("## File created on " + os.getcwd() + "/" + outpath + "/links.txt")
       if args.extract == True:
         inputFile = outpath + "/links.txt"
-        extractor(args.url, args.crawl, outputFile, inputFile, outpath, args.verbose)
+        extractor(website, args.crawl, outputFile, inputFile, outpath, args.verbose)
     else: 
-      extractor(args.url, args.crawl, outputFile, inputFile, outpath, args.verbose)
+      extractor(website, args.crawl, outputFile, inputFile, outpath, args.verbose)
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()

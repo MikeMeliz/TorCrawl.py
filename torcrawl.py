@@ -66,7 +66,7 @@ def connectTor():
 
 
 def main():
-    # Initialize nececery variables
+    # Initialize neccecery variables
     inputFile = outputFile = ''
     cpause = 0
     cdepth = 1
@@ -105,8 +105,6 @@ def main():
     parser.add_argument('-d',
                         '--cdepth', 
                         help='Set depth of crawl\'s travel (Default: 1)')
-    #parser.add_argument('-z','--exclusions' help='Paths that you don\'t want to include')
-    #parser.add_argument('-s','--simultaneous' help='How many pages to visit at the same time')
     parser.add_argument('-p',
                         '--pause', 
                         help='The length of time the crawler will pause')

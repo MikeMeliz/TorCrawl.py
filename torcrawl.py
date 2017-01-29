@@ -73,6 +73,7 @@ def main():
 
     # Get arguments with argparse
     parser = argparse.ArgumentParser(description="TorCrawl.py is a python script to crawl and extract (regular or onion) webpages through TOR network.")
+    
     # General
     parser.add_argument('-v',
                         '--verbose', 
@@ -86,6 +87,7 @@ def main():
                         '--without', 
                         action='store_true', 
                         help='Without the use of Relay TOR')
+    
     # Extract
     parser.add_argument('-e',
                         '--extract', 
@@ -97,6 +99,7 @@ def main():
     parser.add_argument('-o',
                         '--output', 
                         help='Output page(s) to file(s) (for one page)')
+    
     # Crawl
     parser.add_argument('-c',
                         '--crawl', 

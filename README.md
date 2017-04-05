@@ -14,6 +14,9 @@ TorCrawl.py is a python script to crawl and extract (regular or onion) webpages 
 - **Keep in mind:** Extracting and crawling through TOR network take some time. That's normal behaviour; you can find more information [here](https://www.torproject.org/docs/faq.html.en#WhySlow). 
 
 ### What make it simple?
+
+<p align="center"><img src ="https://media.giphy.com/media/RmfzOLuCJTApa/giphy.gif"></p>
+
 If you are a terminal maniac you know that things have to be simple and clear. Passing output into other tools is necessary and accuracy is the key.
 
 With a single argument you can read an .onion webpage or a regular one through TOR Network and using pipes you can pass the output at any other tool you prefer.

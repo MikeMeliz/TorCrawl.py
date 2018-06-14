@@ -115,6 +115,9 @@ def main():
                         '--log', 
                         action='store_true', 
                         help='A save log will let you see which URLs were visited')
+    parser.add_argument('-f',
+                        '--folder',
+                        help='The root directory which will contain the generated files')
 
     args = parser.parse_args()
 
@@ -138,7 +141,10 @@ def main():
     # Canon/ion of website and create path for output 
     if len(args.url) > 0:
       website = urlcanon(args.url, args.verbose)
-      outpath = folder(website, args.verbose)
+      if args.folder is not None:
+        outpath = folder(args.folder, args.verbose)
+      else:
+        outpath = folder(website, args.verbose)
 
     if args.crawl == True:
       lst = crawler(website, cdepth, args.pause, outpath, args.log, args.verbose)

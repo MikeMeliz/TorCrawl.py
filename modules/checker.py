@@ -25,6 +25,8 @@ def folder(website, verbose):
       outpath = website.replace("http://","")
     if website.startswith('https'):
       outpath = website.replace("https://","")
+    else:
+      outpath = website
     if outpath.endswith('/'):
       outpath = outpath[:-1]
     if not os.path.exists(outpath):

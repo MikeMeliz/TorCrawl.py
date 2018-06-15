@@ -50,6 +50,7 @@ arg | Long | Description
 -v  |--verbose| Show more informations about the progress 
 -u  |--url *.onion| URL of Webpage to crawl or extract
 -w  |--without| Without the use of Relay TOR
+-f  |--folder| The directory which will contain the generated files ([@guyo13](https://www.github.com/guyo13))
 **Extract**: | | 
 -e  |--extract| Extract page's code to terminal or file. (Default: Terminal)
 -i  |--input filename| Input file with URL(s) (seperated by line)

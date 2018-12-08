@@ -145,6 +145,9 @@ $ python torcrawl.py -u http://www.github.com/ -c -e | grep '</html>'
 ...
 ```
 
+## Demo:
+![peek 2018-12-08 16-11](https://user-images.githubusercontent.com/9204902/49687660-f72f8280-fb0e-11e8-981e-1bbeeac398cc.gif)
+
 ## Contributors:
 Feel free to contribute on this project! Just fork it, make any change on your fork and add a pull request on current branch! Any advice, help or questions will be great for me :)
 

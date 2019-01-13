@@ -33,9 +33,9 @@ To install this script, you need to clone that repository:
 
 `git clone https://github.com/MikeMeliz/TorCrawl.py.git`
 
-You'll also need BeautifulSoup:
+You'll also need to install dependecies:
 
-`pip install beautifulsoup`
+`pip install -i requirements.txt`
 
 Of course, the TOR Hidden Service is needed:
 

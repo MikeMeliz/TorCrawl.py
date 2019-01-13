@@ -35,7 +35,7 @@ To install this script, you need to clone that repository:
 
 You'll also need to install dependecies:
 
-`pip install -i requirements.txt`
+`pip install -r requirements.txt`
 
 Of course, the TOR Hidden Service is needed:
 

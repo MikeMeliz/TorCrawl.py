@@ -66,7 +66,7 @@ arg | Long | Description
 ### As Extractor:
 To just extract a single webpage to terminal:
 
-```
+```shell
 $ python torcrawl.py -u http://www.github.com
 <!DOCTYPE html>
 ...
@@ -75,21 +75,21 @@ $ python torcrawl.py -u http://www.github.com
 
 Extract into a file (github.htm) without the use of TOR:
 
-```
+```shell
 $ python torcrawl.py -w -u http://www.github.com -o github.htm
 ## File created on /script/path/github.htm
 ```
 
 Extract to terminal and find only the line with google-analytics:
 
-```
+```shell
 $ python torcrawl.py -u http://www.github.com | grep 'google-analytics'
     <meta name="google-analytics" content="UA-*******-*">
 ```
 
 Extract a set of webpages (imported from file) to terminal:
 
-```
+```shell
 $ python torcrawl.py -i links.txt
 ...
 ```
@@ -99,7 +99,7 @@ $ python torcrawl.py -i links.txt
 Crawl the links of the webpage without the use of TOR,
 also show verbose output (really helpfull):
 
-```
+```shell
 $ python torcrawl.py -v -w -u http://www.github.com/ -c
 ## URL: http://www.github.com/
 ## Your IP: *.*.*.*
@@ -110,7 +110,7 @@ $ python torcrawl.py -v -w -u http://www.github.com/ -c
 
 Crawl the webpage with depth 2 (2 clicks) and 5 seconds waiting before crawl the next page:
 
-```
+```shell
 $ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5
 ## TOR is ready!
 ## URL: http://www.github.com/
@@ -123,7 +123,7 @@ $ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5
 ### As Both:
 You can crawl a page and also extract the webpages into a folder with a single command:
 
-```
+```shell
 $ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5 -e
 ## TOR is ready!
 ## URL: http://www.github.com/
@@ -136,9 +136,9 @@ $ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5 -e
 ```
 ***Note:*** *The default (and only for now) file for crawler's links is the `links.txt` document. Also, to extract right after the crawl you have to give `-e` argument*
 
-With the same logic you can parse all these pages to grep (for example) and search for a specific text:
+Following the same logic; you can parse all these pages to grep (for example) and search for specific text:
 
-```
+```shell
 $ python torcrawl.py -u http://www.github.com/ -c -e | grep '</html>'
 </html>
 </html>
@@ -149,7 +149,7 @@ $ python torcrawl.py -u http://www.github.com/ -c -e | grep '</html>'
 ![peek 2018-12-08 16-11](https://user-images.githubusercontent.com/9204902/49687660-f72f8280-fb0e-11e8-981e-1bbeeac398cc.gif)
 
 ## Contributors:
-Feel free to contribute on this project! Just fork it, make any change on your fork and add a pull request on current branch! Any advice, help or questions will be great for me :)
+Feel free to contribute on this project! Just fork it, make any change on your fork and add a pull request on current branch! Any advice, help or questions would be appreciated :shipit:
 
 ## License:
 “GPL” stands for “General Public License”. Using the GNU GPL will require that all the released improved versions be free software. [source & more](https://www.gnu.org/licenses/gpl-faq.html)

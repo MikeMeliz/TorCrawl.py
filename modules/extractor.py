@@ -66,9 +66,9 @@ def outex(website, outputFile, outpath):
 def termex(website):
 	try:
 		print urllib2.urlopen(website).read()
-	except:
-		e = sys.exc_info()[0]
-		print("Error: %s" % e + "\n## Not valid URL \n## Did you forget \'http://\'?")
+	except (urllib2.HTTPError, urllib2.URLError) as e:
+		print("Error: (%s) %s" % (e, website))
+		return None
 
 
 def extractor(website, crawl, outputFile, inputFile, outpath):

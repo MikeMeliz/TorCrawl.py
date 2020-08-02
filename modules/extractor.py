@@ -2,7 +2,7 @@
 
 import os
 import sys
-import urllib2
+import urllib.request, urllib.parse, urllib.error
 
 
 # Input links from file and extract them into path/files
@@ -13,7 +13,7 @@ def cinex(inputFile, outpath):
 	# print f
 	except IOError:
 		e = sys.exc_info()[0]
-		print("Error: %s" % e + "\n## Can't open " + inputFile)
+		print(("Error: %s" % e + "\n## Can't open " + inputFile))
 
 	for line in f:
 
@@ -29,12 +29,12 @@ def cinex(inputFile, outpath):
 		# Extract page to file
 		try:
 			f = open(outpath + "/" + outputFile, 'w')
-			f.write(urllib2.urlopen(line).read())
+			f.write(urllib.request.urlopen(line).read())
 			f.close()
-			print("## File created on " + os.getcwd() + "/" + outpath + "/" + outputFile)
+			print(("## File created on " + os.getcwd() + "/" + outpath + "/" + outputFile))
 		except:
 			e = sys.exc_info()[0]
-			print("Error: %s" % e + "\n Can't write on file " + outputFile)
+			print(("Error: %s" % e + "\n Can't write on file " + outputFile))
 
 
 # Input links from file and extract them into terminal
@@ -42,10 +42,10 @@ def intermex(inputFile):
 	try:
 		f = open(inputFile, 'r')
 		for line in f:
-			print urllib2.urlopen(line).read()
+			print((urllib.request.urlopen(line).read()))
 	except:
 		e = sys.exc_info()[0]
-		print("Error: %s" % e + "\n## Not valid file")
+		print(("Error: %s" % e + "\n## Not valid file"))
 
 
 # Output webpage into a file
@@ -54,20 +54,20 @@ def outex(website, outputFile, outpath):
 	try:
 		outputFile = outpath + "/" + outputFile
 		f = open(outputFile, 'w')
-		f.write(urllib2.urlopen(website).read())
+		f.write(urllib.request.urlopen(website).read())
 		f.close()
-		print("## File created on " + os.getcwd() + "/" + outputFile)
+		print(("## File created on " + os.getcwd() + "/" + outputFile))
 	except:
 		e = sys.exc_info()[0]
-		print("Error: %s" % e + "\n Can't write on file " + outputFile)
+		print(("Error: %s" % e + "\n Can't write on file " + outputFile))
 
 
-# Output webpage into terminal
+# Output to terminal
 def termex(website):
 	try:
-		print urllib2.urlopen(website).read()
-	except (urllib2.HTTPError, urllib2.URLError) as e:
-		print("Error: (%s) %s" % (e, website))
+		print((urllib.request.urlopen(website).read()))
+	except (urllib.error.HTTPError, urllib.error.URLError) as e:
+		print(("Error: (%s) %s" % (e, website)))
 		return None
 
 

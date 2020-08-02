@@ -2,7 +2,7 @@
 
 import sys
 import re
-import urllib2
+import urllib.request
 import time
 from bs4 import BeautifulSoup
 
@@ -12,25 +12,25 @@ def excludes(link, website, outpath):
 	# BUG: For NoneType Exceptions, got to find a solution here
 	if link is None:
 		return True
-		# links
+	# Links
 	elif '#' in link:
 		return True
 		# External links
 	elif link.startswith('http') and not link.startswith(website):
 		lstfile = open(outpath + '/extlinks.txt', 'w+')
-		lstfile.write(link.encode('utf-8') + "\n")
+		lstfile.write(str(link) + '\n')
 		lstfile.close()
 		return True
 		# Telephone Number
 	elif link.startswith('tel:'):
 		lstfile = open(outpath + '/telephones.txt', 'w+')
-		lstfile.write(link.encode('utf-8') + "\n")
+		lstfile.write(str(link) + '\n')
 		lstfile.close()
 		return True
 		# Mails
 	elif link.startswith('mailto:'):
 		lstfile = open(outpath + '/mails.txt', 'w+')
-		lstfile.write(link.encode('utf-8') + "\n")
+		lstfile.write(str(link) + '\n')
 		lstfile.close()
 		return True
 		# Type of files
@@ -72,7 +72,10 @@ def crawler(website, cdepth, cpause, outpath, logs, verbose):
 		global logfile
 		logfile = open(outpath + '/log.txt', 'w+')
 
-	print("## Crawler Started from " + website + " with step " + str(cdepth) + " and wait " + str(cpause))
+	print((
+			"## Crawler started from " + website +
+			" with " + str(cdepth) + " depth crawl and " + str(cpause) + " second(s) delay:"
+	))
 
 	# Depth
 	for x in range(0, int(cdepth)):
@@ -85,14 +88,14 @@ def crawler(website, cdepth, cpause, outpath, logs, verbose):
 				try:
 					if item is not None:
 						global html_page
-						html_page = urllib2.urlopen(item)
-				except urllib2.HTTPError, e:
-					print e
+						html_page = urllib.request.urlopen(item)
+				except urllib.error.HTTPError as e:
+					print(e)
 			else:
-				html_page = urllib2.urlopen(website)
+				html_page = urllib.request.urlopen(website)
 				ordlstind += 1
 
-			soup = BeautifulSoup(html_page)
+			soup = BeautifulSoup(html_page, features="html.parser")
 
 			# For each <a href=""> tag
 			for link in soup.findAll('a'):
@@ -104,24 +107,18 @@ def crawler(website, cdepth, cpause, outpath, logs, verbose):
 				verlink = canonical(link, website)
 				lst.add(verlink)
 
-			# TODO: For each <img src="">
-			# for img in soup.findAll('img')
-			#   img = link.get('src')
-			#   if imgexludes(link, website)
-			#     continue
-			#
-			#   verlink = imgcanonical(link, website)
-			#   lst.add(verlink)
+			# For each <area> tag
+			for link in soup.findAll('area'):
+				link = link.get('href')
 
-			# TODO: For each <script src="">
-			# for link in soup.findAll('script'):
-			#   link = link.get('src')
-			#
-			#   if screxcludes(link, website):
-			#     continue
-			#
-			#   verlink = scrcanonical(link, website)
-			#   lst.add(verlink)
+				if excludes(link, website, outpath):
+					continue
+
+				verlink = canonical(link, website)
+				lst.add(verlink)
+
+			# TODO: For images
+			# TODO: For scripts
 
 			# Pass new on list and re-set it to delete duplicates
 			ordlst = ordlst + list(set(lst))
@@ -132,17 +129,17 @@ def crawler(website, cdepth, cpause, outpath, logs, verbose):
 				sys.stdout.flush()
 
 			# Pause time
-			if (ordlst.index(item) != len(ordlst) - 1) and cpause > 0:
+			if (ordlst.index(item) != len(ordlst) - 1) and int(cpause) > 0:
 				time.sleep(float(cpause))
 
 			# Keeps logs for every webpage visited
 			if logs:
-				logfile.write("%s\n" % item)
+				itcode = html_page.getcode()
+				logfile.write("[" + str(itcode) + "] " + str(item) + "\n")
 
-		print("## Step " + str(x + 1) + " completed with: " + str(len(ordlst)) + " results")
+		print(("## Step " + str(x + 1) + " completed with: " + str(len(ordlst)) + " result(s)"))
 
 	if logs:
 		logfile.close()
 
-	ordlst.sort()
 	return ordlst

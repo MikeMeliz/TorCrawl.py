@@ -33,7 +33,7 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
 # TOR is ready!
 # URL: http://www.github.com/
 # Your IP: XXX.XXX.XXX.XXX
-# Crawler Started from http://www.github.com/ with step 2 and wait 2
+# Crawler started from http://www.github.com/ with 2 depth crawl and 2 second(s) delay:
 # Step 1 completed with: 11 results
 # Step 2 completed with: 112 results
 # File created on /path/to/project/links.txt

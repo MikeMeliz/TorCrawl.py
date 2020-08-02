@@ -5,7 +5,7 @@
   -->
 # TorCrawl.py
 
-[![Version](https://img.shields.io/badge/version-1.0-green.svg?style=plastic)]() [![license](https://img.shields.io/github/license/MikeMeliz/TorCrawl.py.svg?style=plastic)]()
+[![Version](https://img.shields.io/badge/version-1.2-green.svg?style=plastic)]() [![Python](https://img.shields.io/badge/python-v3-blue.svg?style=plastic)]() [![license](https://img.shields.io/github/license/MikeMeliz/TorCrawl.py.svg?style=plastic)]()
 
 ## Basic Information:
 TorCrawl.py is a python script to crawl and extract (regular or onion) webpages through TOR network. 
@@ -21,12 +21,23 @@ If you are a terminal maniac you know that things have to be simple and clear. P
 
 With a single argument you can read an .onion webpage or a regular one through TOR Network and using pipes you can pass the output at any other tool you prefer.
 
-![ExtractAndGrep](https://cloud.githubusercontent.com/assets/9204902/21080715/c34511ca-bfbe-11e6-9fec-230e6430d5dc.png)
+```shell
+$ torcrawl -u http://www.github.com/ | grep 'google-analytics'
+    <meta-name="google-analytics" content="UA-XXXXXX- "> 
+```
 
 If you want to crawl the links of a webpage use the `-c` and **BAM** you got on a file all the inside links. You can even use `-d` to crawl them and so on. As far, there is also the necessary argument `-p` to wait some seconds before the next crawl.
 
-![CrawlwDepthwPause](https://cloud.githubusercontent.com/assets/9204902/21080526/f2b80908-bfb9-11e6-8bc0-fd3eebe182cc.png)
-
+```shell
+$ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
+# TOR is ready!
+# URL: http://www.github.com/
+# Your IP: XXX.XXX.XXX.XXX
+# Crawler Started from http://www.github.com/ with step 2 and wait 2
+# Step 1 completed with: 11 results
+# Step 2 completed with: 112 results
+# File created on /path/to/project/links.txt
+```
 
 ## Installation:
 To install this script, you need to clone that repository:
@@ -59,7 +70,7 @@ arg | Long | Description
 -c  |--crawl| Crawl website (Default output on /links.txt)
 -d  |--cdepth| Set depth of crawl's travel (Default: 1)
 -p  |--pause| The length of time the crawler will pause (Default: 0)
--l  |--log| A save log will let you see which URLs were visited
+-l  |--log| Log file with visited URLs and their response code
 
 ## Usage:
 
@@ -153,3 +164,12 @@ Feel free to contribute on this project! Just fork it, make any change on your f
 
 ## License:
 “GPL” stands for “General Public License”. Using the GNU GPL will require that all the released improved versions be free software. [source & more](https://www.gnu.org/licenses/gpl-faq.html)
+
+## Changelog:
+```
+v1.2:
+    * Migrated to Python3
+    * Option to generate log file (-l)
+    * PEP8 Fixes
+    * Fix double folder generation (http:// domain.com)
+```

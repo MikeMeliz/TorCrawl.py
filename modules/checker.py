@@ -47,7 +47,7 @@ def checktor(verbose):
 	def findwholeword(w):
 		return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
 
-	if findwholeword('tor')(checkfortor):
+	if findwholeword('tor')(str(checkfortor)):
 		if verbose:
 			print("## TOR is ready!")
 	else:

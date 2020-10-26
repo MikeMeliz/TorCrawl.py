@@ -87,7 +87,6 @@ def main():
 	parser.add_argument(
 		'-u',
 		'--url',
-		required=True,
 		help='URL of webpage to crawl or extract'
 	)
 	parser.add_argument(

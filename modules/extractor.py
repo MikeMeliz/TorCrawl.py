@@ -18,17 +18,21 @@ def cinex(inputFile, outpath):
 	for line in f:
 
 		# Generate name for every file
-		pagename = line.rsplit('/', 1)
-		clpagename = str(pagename[1])
-		clpagename = clpagename[:-1]
-		if len(clpagename) == 0:
-			outputFile = "index.htm"
-		else:
-			outputFile = clpagename
+		try:
+			pagename = line.rsplit('/', 1)
+			clpagename = str(pagename[1])
+			clpagename = clpagename[:-1]
+			if len(clpagename) == 0:
+				outputFile = "index.htm"
+			else:
+				outputFile = clpagename
+		except IndexError as e:
+			print("Error: %s" % e)
+			continue
 
 		# Extract page to file
 		try:
-			f = open(outpath + "/" + outputFile, 'w')
+			f = open(outpath + "/" + outputFile, 'wb')
 			f.write(urllib.request.urlopen(line).read())
 			f.close()
 			print(("## File created on " + os.getcwd() + "/" + outpath + "/" + outputFile))
@@ -53,7 +57,7 @@ def outex(website, outputFile, outpath):
 	# Extract page to file
 	try:
 		outputFile = outpath + "/" + outputFile
-		f = open(outputFile, 'w')
+		f = open(outputFile, 'wb')
 		f.write(urllib.request.urlopen(website).read())
 		f.close()
 		print(("## File created on " + os.getcwd() + "/" + outputFile))

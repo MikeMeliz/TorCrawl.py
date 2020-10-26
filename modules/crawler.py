@@ -129,7 +129,7 @@ def crawler(website, cdepth, cpause, outpath, logs, verbose):
 				sys.stdout.flush()
 
 			# Pause time
-			if (ordlst.index(item) != len(ordlst) - 1) and int(cpause) > 0:
+			if (ordlst.index(item) != len(ordlst) - 1) and float(cpause) > 0:
 				time.sleep(float(cpause))
 
 			# Keeps logs for every webpage visited

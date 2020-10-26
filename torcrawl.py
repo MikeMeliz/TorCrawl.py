@@ -128,7 +128,7 @@ def main():
 	)
 	parser.add_argument(
 		'-p',
-		'--pause',
+		'--cpause',
 		help='The length of time the crawler will pause'
 	)
 	parser.add_argument(
@@ -152,8 +152,8 @@ def main():
 		outputfile = args.output
 	if args.cdepth:
 		cdepth = args.cdepth
-	if args.pause:
-		cpause = args.cdepth
+	if args.cpause:
+		cpause = args.cpause
 
 	# Connect to TOR
 	if args.without is False:

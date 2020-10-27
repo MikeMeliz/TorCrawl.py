@@ -167,6 +167,9 @@ Feel free to contribute on this project! Just fork it, make any change on your f
 
 ## Changelog:
 ```
+v1.21:
+    * Fixed typos of delay (-d)
+    * Fixed TyperError and IndexError 
 v1.2:
     * Migrated to Python3
     * Option to generate log file (-l)

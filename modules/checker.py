@@ -88,8 +88,8 @@ def check_ip():
     """
     addr = 'https://api.ipify.org/?format=json'
     try:
-        with load(urlopen(addr))['ip'] as my_ip:
-            print(f'## Your IP: {my_ip}')
+        my_ip = load(urlopen(addr))['ip']
+        print(f'## Your IP: {my_ip}')
     except HTTPError as err:
         error = sys.exc_info()[0]
         print(f"Error: {error} \n## IP cannot be obtained. \n## Is {addr} up? "

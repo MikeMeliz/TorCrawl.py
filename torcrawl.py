@@ -50,7 +50,7 @@ from modules.checker import extract_domain
 from modules.checker import folder
 from modules.checker import url_canon
 # TorCrawl Modules
-from modules.crawler import crawler
+from modules.crawler import Crawler
 from modules.extractor import extractor
 
 
@@ -185,8 +185,9 @@ def main():
             out_path = folder(extract_domain(website), args.verbose)
 
     if args.crawl:
-        lst = crawler(website, c_depth, c_pause, out_path, args.log,
-                      args.verbose)
+        crawler = Crawler(website, c_depth, c_pause, out_path, args.log,
+                          args.verbose)
+        lst = crawler.crawl()
         with open(out_path + '/links.txt', 'w+', encoding='UTF-8') as file:
             for item in lst:
                 file.write(f"{item}\n")

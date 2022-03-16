@@ -111,11 +111,22 @@ class Crawler:
                             html_page = urllib.request.urlopen(item)
                     except HTTPError as error:
                         print(error)
+                        continue
                 else:
-                    html_page = urllib.request.urlopen(self.website)
-                    ord_lst_ind += 1
+                    try:
+                        html_page = urllib.request.urlopen(self.website)
+                        ord_lst_ind += 1
+                    except HTTPError as error:
+                        print(error)
+                        ord_lst_ind += 1
+                        continue
 
-                soup = BeautifulSoup(html_page, features="html.parser")
+                try:
+                    soup = BeautifulSoup(html_page, features="html.parser")
+                except TypeError as err:
+                    print(f"## Soup Error Encountered:: could to parse "
+                          f"ord_list # {ord_lst_ind}::{ord_lst[ord_lst_ind]}")
+                    continue
 
                 # For each <a href=""> tag.
                 for link in soup.findAll('a'):

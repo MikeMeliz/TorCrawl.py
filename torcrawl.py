@@ -155,6 +155,13 @@ def main():
         '--folder',
         help='The root directory which will contain the generated files'
     )
+    parser.add_argument(
+        '-y',
+        '--yara',
+        action='store_true',
+        help='Check for keywords and only scrape documents that contain a '
+             'match.'
+    )
 
     args = parser.parse_args()
 
@@ -194,9 +201,11 @@ def main():
         print(f"## File created on {os.getcwd()}/{out_path}/links.txt")
         if args.extract:
             input_file = out_path + "/links.txt"
-            extractor(website, args.crawl, output_file, input_file, out_path)
+            extractor(website, args.crawl, output_file, input_file, out_path,
+                      args.yara)
     else:
-        extractor(website, args.crawl, output_file, input_file, out_path)
+        extractor(website, args.crawl, output_file, input_file, out_path,
+                  args.yara)
 
 
 # Stub to call main method.

@@ -1,92 +1,130 @@
 #!/usr/bin/python
-
+import io
 import os
 import sys
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
+from urllib.error import HTTPError
+from urllib.error import URLError
 
 
-# Input links from file and extract them into path/files
-def cinex(inputFile, outpath):
-	try:
-		global f
-		f = open(inputFile, 'r')
-	# print f
-	except IOError:
-		e = sys.exc_info()[0]
-		print(("Error: %s" % e + "\n## Can't open " + inputFile))
+def cinex(input_file, out_path):
+    """ Ingests the crawled links from the input_file,
+    scrapes the contents of the resulting web pages and writes the contents to
+    the into out_path/{url_address}.
 
-	for line in f:
+    :param input_file: String: Filename of the crawled Urls.
+    :param out_path: String: Pathname of results.
+    :return: None
+    """
+    file = io.TextIOWrapper
+    try:
+        file = open(input_file, 'r')
+    except IOError as err:
+        # error = sys.exc_info()[0]
+        print(f"Error: {err}\n## Can't open: {input_file}")
 
-		# Generate name for every file
-		try:
-			pagename = line.rsplit('/', 1)
-			clpagename = str(pagename[1])
-			clpagename = clpagename[:-1]
-			if len(clpagename) == 0:
-				outputFile = "index.htm"
-			else:
-				outputFile = clpagename
-		except IndexError as e:
-			print("Error: %s" % e)
-			continue
+    for line in file:
 
-		# Extract page to file
-		try:
-			f = open(outpath + "/" + outputFile, 'wb')
-			f.write(urllib.request.urlopen(line).read())
-			f.close()
-			print(("## File created on " + os.getcwd() + "/" + outpath + "/" + outputFile))
-		except:
-			e = sys.exc_info()[0]
-			print(("Error: %s" % e + "\n Can't write on file " + outputFile))
+        # Generate the name for every file.
+        try:
+            page_name = line.rsplit('/', 1)
+            cl_page_name = str(page_name[1])
+            cl_page_name = cl_page_name[:-1]
+            if len(cl_page_name) == 0:
+                output_file = "index.htm"
+            else:
+                output_file = cl_page_name
+        except IndexError as error:
+            print(f"Error: {error}")
+            continue
 
-
-# Input links from file and extract them into terminal
-def intermex(inputFile):
-	try:
-		f = open(inputFile, 'r')
-		for line in f:
-			print((urllib.request.urlopen(line).read()))
-	except:
-		e = sys.exc_info()[0]
-		print(("Error: %s" % e + "\n## Not valid file"))
+        # Extract page to file
+        try:
+            with open(out_path + "/" + output_file, 'wb') as results:
+                results.write(urllib.request.urlopen(line).read())
+            print(f"# File created on: {os.getcwd()}/{out_path}/{output_file}")
+        except IOError as err:
+            error = sys.exc_info()[0]
+            print(f"Error: {error}\nCan't write on file: {output_file}")
+    file.close()
 
 
-# Output webpage into a file
-def outex(website, outputFile, outpath):
-	# Extract page to file
-	try:
-		outputFile = outpath + "/" + outputFile
-		f = open(outputFile, 'wb')
-		f.write(urllib.request.urlopen(website).read())
-		f.close()
-		print(("## File created on " + os.getcwd() + "/" + outputFile))
-	except:
-		e = sys.exc_info()[0]
-		print(("Error: %s" % e + "\n Can't write on file " + outputFile))
+def intermex(input_file):
+    """ Input links from file and extract them into terminal.
+
+    :param input_file: String: File name of links file.
+    :return: None
+    """
+    try:
+        with open(input_file, 'r') as file:
+            for line in file:
+                print((urllib.request.urlopen(line).read()))
+    except (HTTPError, URLError) as err:
+        print(f"HTTPError: {err}")
+    except IOError as err:
+        # error = sys.exc_info()[0]
+        print(f"Error: {err}\n## Not valid file")
 
 
-# Output to terminal
+def outex(website, output_file, out_path):
+    """ Scrapes the contents of the provided web address and outputs the
+    contents to file.
+
+    :param website: String: Url of web address to scrape.
+    :param output_file: String: Filename of the results.
+    :param out_path: String: Folder name of the output findings.
+    :return: None
+    """
+    # Extract page to file
+    try:
+        output_file = out_path + "/" + output_file
+        with open(output_file, 'wb') as file:
+            file.write(urllib.request.urlopen(website).read())
+        print(f"## File created on: {os.getcwd()}/{output_file}")
+    except (HTTPError, URLError) as err:
+        print(f"HTTPError: {err}")
+    except IOError as err:
+        # error = sys.exc_info()[0]
+        print(f"Error: {err}\n Can't write on file: {output_file}")
+
+
 def termex(website):
-	try:
-		print((urllib.request.urlopen(website).read()))
-	except (urllib.error.HTTPError, urllib.error.URLError) as e:
-		print(("Error: (%s) %s" % (e, website)))
-		return None
+    """ Scrapes provided web address and prints the results to the terminal.
+
+    :param website: String: URL of website to scrape.
+    :return: None
+    """
+    try:
+        print((urllib.request.urlopen(website).read()))
+    except (urllib.error.HTTPError, urllib.error.URLError) as err:
+        print(f"Error: ({err}) {website}")
+        return
 
 
-def extractor(website, crawl, outputFile, inputFile, outpath):
-	# TODO: Return output to torcrawl.py
-	if len(inputFile) > 0:
-		if crawl:
-			cinex(inputFile, outpath)
-		# TODO: Extract from list into a folder
-		# elif len(outputFile) > 0:
-		# 	inoutex(website, inputFile, outputFile)
-		else:
-			intermex(inputFile)
-	else:
-		if len(outputFile) > 0:
-			outex(website, outputFile, outpath)
-		else:
-			termex(website)
+def extractor(website, crawl, output_file, input_file, out_path):
+    """ Extractor - scrapes the resulting website or discovered links.
+
+    :param website: String: URL of website to scrape.
+    :param crawl: Boolean: Cinex trigger.
+        If used iteratively scrape the urls from input_file.
+    :param output_file: String: Filename of resulting output from scrape.
+    :param input_file: String: Filename of crawled/discovered URLs
+    :param out_path: String: Dir path for output files.
+    :return: None
+    """
+    # TODO: Return output to torcrawl.py
+    if len(input_file) > 0:
+        if crawl:
+            cinex(input_file, out_path)
+        # TODO: Extract from list into a folder
+        # elif len(output_file) > 0:
+        # 	inoutex(website, input_ile, output_file)
+        else:
+            intermex(input_file)
+    else:
+        if len(output_file) > 0:
+            outex(website, output_file, out_path)
+        else:
+            termex(website)

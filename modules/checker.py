@@ -1,67 +1,96 @@
 #!/usr/bin/python
 
-import sys
+import os
 import re
 import subprocess
-import os
-from urllib.request import urlopen
+import sys
 from json import load
+from urllib.error import HTTPError
 from urllib.parse import urlparse
+from urllib.request import urlopen
 
 
-def urlcanon(website, verbose):
-	if not website.startswith("http"):
-		if not website.startswith("www."):
-			website = "www." + website
-			if verbose:
-				print(("## URL fixed: " + website))
-		website = "http://" + website
-		if verbose:
-			print(("## URL fixed: " + website))
-	return website
+def url_canon(website, verbose):
+    """
+
+    :param website: String -
+    :param verbose: Boolean -
+    :return: String 'website' -
+    """
+    if not website.startswith("http"):
+        if not website.startswith("www."):
+            website = "www." + website
+            if verbose:
+                print(("## URL fixed: " + website))
+        website = "http://" + website
+        if verbose:
+            print(("## URL fixed: " + website))
+    return website
 
 
 def extract_domain(url, remove_http=True):
-	uri = urlparse(url)
-	if remove_http:
-		domain_name = f"{uri.netloc}"
-	else:
-		domain_name = f"{uri.netloc}://{uri.netloc}"
-	return domain_name
+    """
+
+    :param url: String -
+    :param remove_http: Boolean -
+    :return: String 'domain_name' -
+    """
+    uri = urlparse(url)
+    if remove_http:
+        domain_name = f"{uri.netloc}"
+    else:
+        domain_name = f"{uri.netloc}://{uri.netloc}"
+    return domain_name
 
 
 # Create output path
 def folder(website, verbose):
-	outpath = website
-	if not os.path.exists(outpath):
-		os.makedirs(outpath)
-	if verbose:
-		print(("## Folder created: " + outpath))
-	return outpath
+    """ Creates an output path for the findings.
+
+    :param website: String - URL of website to crawl.
+    :param verbose: Boolean - Logging level.
+    :return: String 'out_path' - Path of the output folder.
+    """
+    out_path = website
+    if not os.path.exists(out_path):
+        os.makedirs(out_path)
+    if verbose:
+        print(f"## Folder created: {out_path}")
+    return out_path
 
 
-# Check if TOR service is running
-def checktor(verbose):
-	checkfortor = subprocess.check_output(['ps', '-e'])
+def check_tor(verbose):
+    """Checks to see if TOR service is running on device.
+    Will exit if (-w) with argument is provided on application startup and TOR
+    service is not found to be running on the device.
 
-	def findwholeword(w):
-		return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
+    :param verbose: Boolean -'verbose' logging argument.
+    :return: None
+    """
+    check_for_tor = subprocess.check_output(['ps', '-e'])
 
-	if findwholeword('tor')(str(checkfortor)):
-		if verbose:
-			print("## TOR is ready!")
-	else:
-		print("## TOR is NOT running!")
-		print('## Enable tor with \'service tor start\' or add -w argument')
-		sys.exit(2)
+    def find_whole_word(word):
+        return re.compile(r'\b({0})\b'.format(word),
+                          flags=re.IGNORECASE).search
+
+    if find_whole_word('tor')(str(check_for_tor)):
+        if verbose:
+            print("## TOR is ready!")
+    else:
+        print("## TOR is NOT running!")
+        print('## Enable tor with \'service tor start\' or add -w argument')
+        sys.exit(2)
 
 
-# Check your IP from external website
-def checkip():
-	try:
-		webipcheck = 'https://api.ipify.org/?format=json'
-		my_ip = load(urlopen(webipcheck))['ip']
-		print(('## Your IP: ' + my_ip))
-	except:
-		e = sys.exc_info()[0]
-		print(("Error: %s" % e + "\n## IP can't obtain \n## Is " + webipcheck + "up?"))
+def check_ip():
+    """ Checks users IP from external resource.
+    :return: None or HTTPError
+    """
+    addr = 'https://api.ipify.org/?format=json'
+    try:
+        my_ip = load(urlopen(addr))['ip']
+        print(f'## Your IP: {my_ip}')
+    except HTTPError as err:
+        error = sys.exc_info()[0]
+        print(f"Error: {error} \n## IP cannot be obtained. \n## Is {addr} up? "
+              f"\n## HTTPError: {err}")

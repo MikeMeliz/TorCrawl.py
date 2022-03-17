@@ -11,11 +11,11 @@ from urllib.request import urlopen
 
 
 def url_canon(website, verbose):
-    """
+    """ URL normalisation/canonicalization
 
-    :param website: String -
-    :param verbose: Boolean -
-    :return: String 'website' -
+    :param website: String - URL of website.
+    :param verbose: Boolean - Verbose logging switch.
+    :return: String 'website' - normalised result.
     """
     if not website.startswith("http"):
         if not website.startswith("www."):
@@ -29,17 +29,18 @@ def url_canon(website, verbose):
 
 
 def extract_domain(url, remove_http=True):
-    """
+    """ Parses the provided 'url' to provide only the netloc or
+    scheme + netloc parts of the provided url.
 
-    :param url: String -
-    :param remove_http: Boolean -
-    :return: String 'domain_name' -
+    :param url: String - Url to parse.
+    :param remove_http: Boolean
+    :return: String 'domain_name' - Resulting parsed Url
     """
     uri = urlparse(url)
     if remove_http:
         domain_name = f"{uri.netloc}"
     else:
-        domain_name = f"{uri.netloc}://{uri.netloc}"
+        domain_name = f"{uri.scheme}://{uri.netloc}"
     return domain_name
 
 

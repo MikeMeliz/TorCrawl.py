@@ -22,7 +22,7 @@ class Crawler:
     def excludes(self, link):
         """ Excludes links that are not required.
 
-        :param link:
+        :param link: String
         :return: Boolean
         """
         # BUG: For NoneType Exceptions, got to find a solution here
@@ -57,8 +57,8 @@ class Crawler:
     def canonical(self, link):
         """ Canonization of the link.
 
-        :param link:
-        :return:
+        :param link: String
+        :return: String 'final_link': parsed canonical url.
         """
         # Already formatted
         if link.startswith(self.website):

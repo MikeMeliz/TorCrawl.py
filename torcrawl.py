@@ -176,7 +176,7 @@ def main():
     website = ''
     out_path = ''
 
-    # Canon/ion of website and create path for output
+    # Canonicalization of web url and create path for output.
     if len(args.url) > 0:
         website = url_canon(args.url, args.verbose)
         if args.folder is not None:

@@ -14,14 +14,12 @@ from http.client import IncompleteRead
 from bs4 import BeautifulSoup
 
 
-def check_yara(raw=None, cat=False):
+def check_yara(raw=None):
     """
         Validates Yara Rule to categorize the site and check for keywords.
     """
 
     file_path = os.path.join('res/keywords.yar')
-    if cat:
-        file_path = os.path.join('res/categories.yar')
 
     if raw is not None:
         file = os.path.join(file_path)

@@ -20,6 +20,8 @@ Extract:
                           (Defualt: terminal)
 -i, --input filename    : Input file with URL(s) (seperated by line)
 -o, --output [filename] : Output page(s) to file(s) (for one page)
+-y, --yara              : Yara keyword search page categorisation
+                        read in from /res folder.
 
 Crawl:
 -c, --crawl       : Crawl website (Default output on /links.txt)

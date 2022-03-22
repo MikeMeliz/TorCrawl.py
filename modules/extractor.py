@@ -54,7 +54,6 @@ def cinex(input_file, out_path, yara):
     try:
         file = open(input_file, 'r')
     except IOError as err:
-        # error = sys.exc_info()[0]
         print(f"Error: {err}\n## Can't open: {input_file}")
 
     for line in file:
@@ -150,10 +149,9 @@ def outex(website, output_file, out_path, yara):
         with open(output_file, 'wb') as file:
             file.write(content)
         print(f"## File created on: {os.getcwd()}/{output_file}")
-    except (HTTPError, URLError) as err:
+    except (HTTPError, URLError, InvalidURL) as err:
         print(f"HTTPError: {err}")
     except IOError as err:
-        # error = sys.exc_info()[0]
         print(f"Error: {err}\n Can't write on file: {output_file}")
 
 
@@ -176,7 +174,7 @@ def termex(website, yara):
                 return
 
         print(content)
-    except (urllib.error.HTTPError, urllib.error.URLError) as err:
+    except (HTTPError, URLError, InvalidURL) as err:
         print(f"Error: ({err}) {website}")
         return
 

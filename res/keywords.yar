@@ -25,8 +25,9 @@ rule keyword_search
     strings:
         $a = "Keyword1" fullword wide ascii nocase
         $b = "Keyword Two" wide ascii nocase
-        $c = "kw 3" asci
+        $c = "kw 3" ascii
         $d = "KEYWORD four" nocase
+        $e = "necessarily" nocase
 
     condition:
         any of them

@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import io
 import os
-import sys
 import yara as _yara
 import urllib.error
 import urllib.parse
@@ -15,9 +14,11 @@ from bs4 import BeautifulSoup
 
 
 def text(response=None):
-    """
-        Removes all the garbage from the HTML and takes only text elements
-        from the page.
+    """ Removes all the garbage from the HTML and takes only text elements
+    from the page.
+
+    :param response: HTTP Response.
+    :return: String: Text only stripped response.
     """
     soup = BeautifulSoup(response, features="lxml")
     for s in soup(['script', 'style']):
@@ -27,8 +28,11 @@ def text(response=None):
 
 
 def check_yara(raw=None, yara=0):
-    """
-        Validates Yara Rule to categorize the site and check for keywords.
+    """ Validates Yara Rule to categorize the site and check for keywords.
+
+    :param raw: HTTP Response body.
+    :param yara:  Integer: Keyword search argument.
+    :return matches: List of yara rule matches.
     """
 
     file_path = os.path.join('res/keywords.yar')
@@ -52,7 +56,7 @@ def cinex(input_file, out_path, yara=None):
 
     :param input_file: String: Filename of the crawled Urls.
     :param out_path: String: Pathname of results.
-    :param yara: Boolean:
+    :param yara: Integer: Keyword search argument.
     :return: None
     """
     file = io.TextIOWrapper
@@ -108,7 +112,7 @@ def intermex(input_file, yara):
     """ Input links from file and extract them into terminal.
 
     :param input_file: String: File name of links file.
-    :param yara: Boolean:
+    :param yara: Integer: Keyword search argument.
     :return: None
     """
     try:
@@ -134,7 +138,7 @@ def outex(website, output_file, out_path, yara):
     :param website: String: Url of web address to scrape.
     :param output_file: String: Filename of the results.
     :param out_path: String: Folder name of the output findings.
-    :param yara: Boolean:
+    :param yara: Integer: Keyword search argument.
     :return: None
     """
     # Extract page to file
@@ -161,7 +165,7 @@ def termex(website, yara):
     """ Scrapes provided web address and prints the results to the terminal.
 
     :param website: String: URL of website to scrape.
-    :param yara: Boolean:
+    :param yara: Integer: Keyword search argument.
     :return: None
     """
     try:
@@ -189,7 +193,7 @@ def extractor(website, crawl, output_file, input_file, out_path, yara):
     :param output_file: String: Filename of resulting output from scrape.
     :param input_file: String: Filename of crawled/discovered URLs
     :param out_path: String: Dir path for output files.
-    :yara: Boolean:
+    :param yara: Integer: keyword search option.
     :return: None
     """
     # TODO: Return output to torcrawl.py

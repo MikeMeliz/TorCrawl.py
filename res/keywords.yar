@@ -27,7 +27,7 @@ rule keyword_search
         $b = "Keyword Two" wide ascii nocase
         $c = "kw 3" ascii
         $d = "KEYWORD four" nocase
-        $e = "necessarily" nocase
+        $e = "google-" nocase
 
     condition:
         any of them

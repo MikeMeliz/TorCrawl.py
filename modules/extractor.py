@@ -14,20 +14,6 @@ from http.client import IncompleteRead
 from bs4 import BeautifulSoup
 
 
-def check_yara(raw=None):
-    """
-        Validates Yara Rule to categorize the site and check for keywords.
-    """
-
-    file_path = os.path.join('res/keywords.yar')
-
-    if raw is not None:
-        file = os.path.join(file_path)
-        rules = _yara.compile(file)
-        matches = rules.match(data=raw)
-        return matches
-
-
 def text(response=None):
     """
         Removes all the garbage from the HTML and takes only text elements
@@ -40,7 +26,26 @@ def text(response=None):
     return ' '.join(soup.stripped_strings)
 
 
-def cinex(input_file, out_path, yara):
+def check_yara(raw=None, yara=0):
+    """
+        Validates Yara Rule to categorize the site and check for keywords.
+    """
+
+    file_path = os.path.join('res/keywords.yar')
+
+    if raw is not None:
+        if yara == 1:
+            raw = text(response=raw).lower()
+
+        file = os.path.join(file_path)
+        rules = _yara.compile(file)
+        matches = rules.match(data=raw)
+        if len(matches) != 0:
+            print("found a match!")
+        return matches
+
+
+def cinex(input_file, out_path, yara=None):
     """ Ingests the crawled links from the input_file,
     scrapes the contents of the resulting web pages and writes the contents to
     the into out_path/{url_address}.
@@ -75,9 +80,8 @@ def cinex(input_file, out_path, yara):
         try:
             content = urllib.request.urlopen(line, timeout=10).read()
 
-            if yara:
-                full_match_keywords = check_yara(raw=text(
-                    response=content).lower())
+            if yara is not None:
+                full_match_keywords = check_yara(content, yara)
 
                 if len(full_match_keywords) == 0:
                     print('No matches found.')
@@ -111,9 +115,8 @@ def intermex(input_file, yara):
         with open(input_file, 'r') as file:
             for line in file:
                 content = urllib.request.urlopen(line).read()
-                if yara:
-                    full_match_keywords = check_yara(raw=text(
-                        response=content).lower())
+                if yara is not None:
+                    full_match_keywords = check_yara(raw=content, yara=yara)
 
                     if len(full_match_keywords) == 0:
                         print(f"No matched in: {line}")
@@ -139,9 +142,8 @@ def outex(website, output_file, out_path, yara):
         output_file = out_path + "/" + output_file
         content = urllib.request.urlopen(website).read()
 
-        if yara:
-            full_match_keywords = check_yara(raw=text(
-                response=content).lower())
+        if yara is not None:
+            full_match_keywords = check_yara(raw=content, yara=yara)
 
             if len(full_match_keywords) == 0:
                 print(f"No matched in: {website}")
@@ -164,9 +166,8 @@ def termex(website, yara):
     """
     try:
         content = urllib.request.urlopen(website).read()
-        if yara:
-            full_match_keywords = check_yara(raw=text(
-                response=content).lower())
+        if yara is not None:
+            full_match_keywords = check_yara(content, yara)
 
             if len(full_match_keywords) == 0:
                 # No match.

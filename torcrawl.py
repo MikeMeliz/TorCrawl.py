@@ -21,7 +21,8 @@ Extract:
 -i, --input filename    : Input file with URL(s) (seperated by line)
 -o, --output [filename] : Output page(s) to file(s) (for one page)
 -y, --yara              : Yara keyword search page categorisation
-                        read in from /res folder.
+                        read in from /res folder. 0 search whole html object.
+                        1 search only the text.
 
 Crawl:
 -c, --crawl       : Crawl website (Default output on /links.txt)
@@ -160,9 +161,8 @@ def main():
     parser.add_argument(
         '-y',
         '--yara',
-        action='store_true',
         help='Check for keywords and only scrape documents that contain a '
-             'match.'
+             'match. 0 search whole html object. 1 search only the text.'
     )
 
     args = parser.parse_args()
@@ -172,6 +172,9 @@ def main():
     output_file = args.output if args.output else ''
     c_depth = args.cdepth if args.cdepth else 0
     c_pause = args.cpause if args.cpause else 1
+
+    if int(args.yara) not in [0, 1]:
+        parser.error("argument -y/--yara: expected argument 0 or 1.")
 
     # Connect to TOR
     if args.without is False:
@@ -204,10 +207,10 @@ def main():
         if args.extract:
             input_file = out_path + "/links.txt"
             extractor(website, args.crawl, output_file, input_file, out_path,
-                      args.yara)
+                      int(args.yara))
     else:
         extractor(website, args.crawl, output_file, input_file, out_path,
-                  args.yara)
+                  int(args.yara))
 
 
 # Stub to call main method.

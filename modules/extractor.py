@@ -123,7 +123,7 @@ def intermex(input_file, yara):
                     full_match_keywords = check_yara(raw=content, yara=yara)
 
                     if len(full_match_keywords) == 0:
-                        print(f"No matched in: {line}")
+                        print(f"No matches in: {line}")
                 print(content)
     except (HTTPError, URLError, InvalidURL) as err:
         print(f"Request Error: {err}")
@@ -150,7 +150,7 @@ def outex(website, output_file, out_path, yara):
             full_match_keywords = check_yara(raw=content, yara=yara)
 
             if len(full_match_keywords) == 0:
-                print(f"No matched in: {website}")
+                print(f"No matches in: {website}")
 
         with open(output_file, 'wb') as file:
             file.write(content)
@@ -175,7 +175,7 @@ def termex(website, yara):
 
             if len(full_match_keywords) == 0:
                 # No match.
-                print(f"No matched in: {website}")
+                print(f"No matches in: {website}")
                 return
 
         print(content)

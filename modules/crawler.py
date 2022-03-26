@@ -136,7 +136,8 @@ class Crawler:
                         continue
 
                     ver_link = self.canonical(link)
-                    lst.add(ver_link)
+                    if ver_link is not None:
+                        lst.add(ver_link)
 
                 # For each <area> tag.
                 for link in soup.findAll('area'):
@@ -146,7 +147,8 @@ class Crawler:
                         continue
 
                     ver_link = self.canonical(link)
-                    lst.add(ver_link)
+                    if ver_link is not None:
+                        lst.add(ver_link)
 
                 # TODO: For images
                 # TODO: For scripts

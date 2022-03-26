@@ -66,6 +66,7 @@ arg | Long | Description
 -e  |--extract| Extract page's code to terminal or file. (Default: Terminal)
 -i  |--input filename| Input file with URL(s) (seperated by line)
 -o  |--output [filename]| Output page(s) to file(s) (for one page)
+-y  |--yara | Perform yara keyword search (0 = search entire html object. 1 = search only text). 
 **Crawl**: | |
 -c  |--crawl| Crawl website (Default output on /links.txt)
 -d  |--cdepth| Set depth of crawl's travel (Default: 1)
@@ -97,6 +98,14 @@ Extract to terminal and find only the line with google-analytics:
 $ python torcrawl.py -u http://www.github.com | grep 'google-analytics'
     <meta name="google-analytics" content="UA-*******-*">
 ```
+
+Extract to file and find only the line with google-analytics using yara:
+```shell
+$ python torcrawl.py -v -w -u https://github.com -e -y 0
+...
+```
+**_Note:_** update res/keyword.yar to search for other keywords.
+Use ```-y 0``` for raw html searching and ```-y 1``` for text search only.
 
 Extract a set of webpages (imported from file) to terminal:
 
@@ -155,6 +164,24 @@ $ python torcrawl.py -u http://www.github.com/ -c -e | grep '</html>'
 </html>
 ...
 ```
+
+### As Both + Keyword Search:
+You can crawl a page, perform a keyword search and extract the webpages that match the findings into a folder with a single command:
+
+```shell
+$ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5 -e -y 0
+## TOR is ready!
+## URL: http://www.github.com/
+## Your IP: *.*.*.*
+## Crawler Started from http://www.github.com with step 1 and wait 5
+## Step 1 completed with: 11 results
+## File created on /script/path/FolderName/index.htm
+## File created on /script/path/FolderName/projects.html
+## ...
+```
+
+***Note:*** *Update res/keyword.yar to search for other keywords.
+Use ```-y 0``` for raw html searching and ```-y 1``` for text search only.*
 
 ## Demo:
 ![peek 2018-12-08 16-11](https://user-images.githubusercontent.com/9204902/49687660-f72f8280-fb0e-11e8-981e-1bbeeac398cc.gif)

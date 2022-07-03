@@ -66,4 +66,4 @@ class TestCheckFunctions(unittest.TestCase):
         self.assertTrue(os.path.exists(result),
                         f'Test Fail:: could not find folder {_input}')
 
-
+    # TODO: Implement check_tor and check_ip tests.

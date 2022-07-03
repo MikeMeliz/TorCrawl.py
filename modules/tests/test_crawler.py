@@ -1,10 +1,10 @@
 import shutil
 import unittest
 
-from ..crawler import Crawler
-from ..checker import url_canon
-from ..checker import extract_domain
-from ..checker import folder
+from modules.crawler import Crawler
+from modules.checker import url_canon
+from modules.checker import extract_domain
+from modules.checker import folder
 
 
 class TestCrawlerFunctions(unittest.TestCase):

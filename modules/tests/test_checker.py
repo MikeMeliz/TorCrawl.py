@@ -1,9 +1,9 @@
 import os.path
 import unittest
 
-from ..checker import extract_domain
-from ..checker import folder
-from ..checker import url_canon
+from modules.checker import extract_domain
+from modules.checker import folder
+from modules.checker import url_canon
 
 
 class TestCheckFunctions(unittest.TestCase):

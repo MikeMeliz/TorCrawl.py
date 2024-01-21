@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import io
 import os
-import yara as _yara
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -26,7 +25,6 @@ def text(response=None):
 
     return ' '.join(soup.stripped_strings)
 
-
 def check_yara(raw=None, yara=0):
     """ Validates Yara Rule to categorize the site and check for keywords.
 
@@ -34,6 +32,12 @@ def check_yara(raw=None, yara=0):
     :param yara:  Integer: Keyword search argument.
     :return matches: List of yara rule matches.
     """
+
+    try:
+        import yara as _yara
+    except OSError:
+        print("YARA module error: " + 
+              "Try this solution: https://stackoverflow.com/a/51504326")
 
     file_path = os.path.join('res/keywords.yar')
 
@@ -45,7 +49,7 @@ def check_yara(raw=None, yara=0):
         rules = _yara.compile(file)
         matches = rules.match(data=raw)
         if len(matches) != 0:
-            print("found a match!")
+            print("YARA: Found a match!")
         return matches
 
 
@@ -184,7 +188,7 @@ def termex(website, yara):
         return
 
 
-def extractor(website, crawl, output_file, input_file, out_path, yara):
+def extractor(website, crawl, output_file, input_file, out_path, selection_yara):
     """ Extractor - scrapes the resulting website or discovered links.
 
     :param website: String: URL of website to scrape.
@@ -193,20 +197,20 @@ def extractor(website, crawl, output_file, input_file, out_path, yara):
     :param output_file: String: Filename of resulting output from scrape.
     :param input_file: String: Filename of crawled/discovered URLs
     :param out_path: String: Dir path for output files.
-    :param yara: Integer: keyword search option.
+    :param selection_yara: String: Selected option of HTML or Text.
     :return: None
     """
     # TODO: Return output to torcrawl.py
     if len(input_file) > 0:
         if crawl:
-            cinex(input_file, out_path, yara)
+            cinex(input_file, out_path, selection_yara)
         # TODO: Extract from list into a folder
         # elif len(output_file) > 0:
         # 	inoutex(website, input_ile, output_file)
         else:
-            intermex(input_file, yara)
+            intermex(input_file, selection_yara)
     else:
         if len(output_file) > 0:
-            outex(website, output_file, out_path, yara)
+            outex(website, output_file, out_path, selection_yara)
         else:
-            termex(website, yara)
+            termex(website, selection_yara)

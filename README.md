@@ -63,10 +63,10 @@ arg | Long | Description
 -w  |--without| Without the use of Relay TOR
 -f  |--folder| The directory which will contain the generated files ([@guyo13](https://www.github.com/guyo13))
 **Extract**: | | 
--e  |--extract| Extract page's code to terminal or file. (Default: Terminal)
+-e  |--extract| Extract page's code to terminal or file (Default: Terminal)
 -i  |--input filename| Input file with URL(s) (seperated by line)
 -o  |--output [filename]| Output page(s) to file(s) (for one page)
--y  |--yara | Perform yara keyword search (0 = search entire html object. 1 = search only text). 
+-y  |--yara | Perform yara keyword search <br>h = search entire html object,<br>t = search only text <br>([@the-siegfried](https://github.com/the-siegfried))
 **Crawl**: | |
 -c  |--crawl| Crawl website (Default output on /links.txt)
 -d  |--cdepth| Set depth of crawl's travel (Default: 1)
@@ -169,7 +169,7 @@ $ python torcrawl.py -u http://www.github.com/ -c -e | grep '</html>'
 You can crawl a page, perform a keyword search and extract the webpages that match the findings into a folder with a single command:
 
 ```shell
-$ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5 -e -y 0
+$ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5 -e -y h
 ## TOR is ready!
 ## URL: http://www.github.com/
 ## Your IP: *.*.*.*
@@ -181,7 +181,7 @@ $ python torcrawl.py -v -u http://www.github.com/ -c -d 2 -p 5 -e -y 0
 ```
 
 ***Note:*** *Update res/keyword.yar to search for other keywords.
-Use ```-y 0``` for raw html searching and ```-y 1``` for text search only.*
+Use ```-y h``` for raw html searching and ```-y t``` for text search only.*
 
 ## Demo:
 ![peek 2018-12-08 16-11](https://user-images.githubusercontent.com/9204902/49687660-f72f8280-fb0e-11e8-981e-1bbeeac398cc.gif)
@@ -194,6 +194,8 @@ Feel free to contribute on this project! Just fork it, make any change on your f
 
 ## Changelog:
 ```
+v1.3:
+    * Make yara search optional
 v1.21:
     * Fixed typos of delay (-d)
     * Fixed TyperError and IndexError 

@@ -3,9 +3,10 @@ import http.client
 import os
 import re
 import sys
+import datetime
 import time
 import urllib.request
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 
 from bs4 import BeautifulSoup
 
@@ -25,6 +26,8 @@ class Crawler:
         :param link: String
         :return: Boolean
         """
+        now = datetime.datetime.now().strftime("%Y%m%d")
+
         # BUG: For NoneType Exceptions, got to find a solution here
         if link is None:
             return True
@@ -33,19 +36,19 @@ class Crawler:
             return True
         # External links
         elif link.startswith('http') and not link.startswith(self.website):
-            file_path = self.out_path + '/extlinks.txt'
+            file_path = self.out_path + '/' + now + '_extlinks.txt'
             with open(file_path, 'w+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
             return True
         # Telephone Number
         elif link.startswith('tel:'):
-            file_path = self.out_path + '/telephones.txt'
+            file_path = self.out_path + '/' + now + '_telephones.txt'
             with open(file_path, 'w+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
             return True
         # Mails
         elif link.startswith('mailto:'):
-            file_path = self.out_path + '/mails.txt'
+            file_path = self.out_path + '/' + now + '_mails.txt'
             with open(file_path, 'w+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
             return True
@@ -55,7 +58,7 @@ class Crawler:
             return True
 
     def canonical(self, link):
-        """ Canonization of the link.
+        """ Canonicalization of the link.
 
         :param link: String
         :return: String 'final_link': parsed canonical url.
@@ -109,15 +112,21 @@ class Crawler:
                     try:
                         if item is not None:
                             html_page = urllib.request.urlopen(item)
-                    except HTTPError as error:
-                        print(error)
+                    except (HTTPError, URLError) as error:
+                        print('## ERROR: Domain or link seems to be '
+                              'unreachable. Add -v to see the verbose error.'
+                              'Or write the full URL at -u argument!')
+                        if self.verbose: print(error)
                         continue
                 else:
                     try:
                         html_page = urllib.request.urlopen(self.website)
                         ord_lst_ind += 1
-                    except HTTPError as error:
-                        print(error)
+                    except (HTTPError, URLError) as error:
+                        print('## ERROR: Domain or link seems to be '
+                              'unreachable. Add -v to see the verbose error.'
+                              'Or write the full URL at -u argument!')
+                        if self.verbose: print(error)
                         ord_lst_ind += 1
                         continue
 
@@ -150,6 +159,20 @@ class Crawler:
                     if ver_link is not None:
                         lst.add(ver_link)
 
+                # TODO: For non-formal links, using RegEx
+                # url_pattern = r'/(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[A-Z0-9+&@#\/%=~_|$])/igm'
+                # html_content = urllib.request.urlopen(self.website).read().decode('utf-8')
+                
+                # if self.verbose:
+                #     print("## Starting RegEx parsing of the page")
+                # found_regex = re.findall(url_pattern, html_content)
+                # for link in found_regex:
+                #     if self.excludes(link):
+                #         continue
+                #     ver_link = self.canonical(link)
+                #     if ver_link is not None:
+                #         lst.add(ver_link)
+
                 # TODO: For images
                 # TODO: For scripts
 
@@ -172,7 +195,7 @@ class Crawler:
                     with open(log_path, 'w+', encoding='UTF-8') as log_file:
                         log_file.write(f"[{str(it_code)}] {str(item)} \n")
 
-            print(f"## Step {str(index + 1)} completed \n\t "
+            print(f"## Step {str(index + 1)} completed "
                   f"with: {str(len(ord_lst))} result(s)")
 
         return ord_lst

@@ -45,6 +45,7 @@ import argparse
 import os
 import socket
 import sys
+import datetime
 
 import socks  # noqa - pysocks
 
@@ -199,10 +200,13 @@ def main():
         crawler = Crawler(website, c_depth, c_pause, out_path, args.log,
                           args.verbose)
         lst = crawler.crawl()
-        with open(out_path + '/links.txt', 'w+', encoding='UTF-8') as file:
+
+        now = datetime.datetime.now().strftime("%Y%m%d")
+        with open(out_path + '/' + now + '_links.txt', 'w+', encoding='UTF-8') as file:
             for item in lst:
                 file.write(f"{item}\n")
         print(f"## File created on {os.getcwd()}/{out_path}/links.txt")
+
         if args.extract:
             input_file = out_path + "/links.txt"
             extractor(website, args.crawl, output_file, input_file, out_path,

@@ -10,8 +10,12 @@
 ## Basic Information:
 TorCrawl.py is a python script to crawl and extract (regular or onion) webpages through TOR network. 
 
-- **Warning:** Crawling is not illegal, but violating copyright is. It’s always best to double check a website’s T&C before crawling them. Some websites set up what’s called robots.txt to tell crawlers not to visit those pages. This crawler will allow you to go around this, but we always recommend respecting robots.txt.
-- **Keep in mind:** Extracting and crawling through TOR network take some time. That's normal behaviour; you can find more information [here](https://www.torproject.org/docs/faq.html.en#WhySlow). 
+> [!NOTE]  
+> Extracting and crawling through TOR network take some time. That's normal behaviour; you can find more information [here](https://www.torproject.org/docs/faq.html.en#WhySlow). 
+
+> [!WARNING]  
+> Crawling is not illegal, but violating copyright is. It’s always best to double check a website’s T&C before start crawling them. Some websites set up what’s called `robots.txt` to tell crawlers not to visit those pages.
+> <br>This crawler will allow you to go around this, but we always recommend respecting robots.txt.
 
 <p align="center"><img src ="https://media.giphy.com/media/RmfzOLuCJTApa/giphy.gif"></p>
 
@@ -62,7 +66,7 @@ arg | Long | Description
 -u  |--url *.onion| URL of Webpage to crawl or extract
 -w  |--without| Without the use of Relay TOR
 -f  |--folder| The directory which will contain the generated files ([@guyo13](https://www.github.com/guyo13))
-**Extract**: | | 
+**Extract**: | |
 -e  |--extract| Extract page's code to terminal or file (Default: Terminal)
 -i  |--input filename| Input file with URL(s) (seperated by line)
 -o  |--output [filename]| Output page(s) to file(s) (for one page)
@@ -187,7 +191,12 @@ Use ```-y h``` for raw html searching and ```-y t``` for text search only.*
 ![peek 2018-12-08 16-11](https://user-images.githubusercontent.com/9204902/49687660-f72f8280-fb0e-11e8-981e-1bbeeac398cc.gif)
 
 ## Contributors:
-Feel free to contribute on this project! Just fork it, make any change on your fork and add a pull request on current branch! Any advice, help or questions would be appreciated :shipit:
+Feel free to contribute on this project! Just fork it, make any change on your fork and add a pull request on current branch!
+
+<a href="https://github.com/MikeMeliz/TorCrawl.py/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=MikeMeliz/TorCrawl.py" />
+</a>
+<br>Any advice, help or questions would be appreciated :shipit:
 
 ## License:
 “GPL” stands for “General Public License”. Using the GNU GPL will require that all the released improved versions be free software. [source & more](https://www.gnu.org/licenses/gpl-faq.html)

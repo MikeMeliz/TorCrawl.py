@@ -6,8 +6,9 @@
 
 <div align="center">
   
+  <img width="50%" alt="TorCrawl.py Logo" src=".github/torcrawl.svg">
+  
   ### TorCrawl.py is a Python script designed for anonymous web scraping via the Tor network.
-  <img src ="https://github.com/MikeMeliz/TorCrawl.py/assets/9204902/4d70a556-c1a0-48a2-b885-4965bd441761">
   <p>It combines ease of use with the robust privacy features of Tor, allowing for secure and untraceable data collection. Ideal for both novice and experienced programmers, this tool is essential for responsible data gathering in the digital age.</p>
   
   [![Release][release-version-shield]][releases-link]

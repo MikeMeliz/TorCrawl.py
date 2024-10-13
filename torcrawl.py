@@ -208,7 +208,7 @@ def main():
         print(f"## File created on {os.getcwd()}/{out_path}/links.txt")
 
         if args.extract:
-            input_file = out_path + "/links.txt"
+            input_file = out_path + "/" + now + "_links.txt"
             extractor(website, args.crawl, output_file, input_file, out_path,
                       selection_yara)
     else:

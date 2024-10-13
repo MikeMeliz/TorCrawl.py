@@ -206,7 +206,7 @@ def main():
         with open(input_file, 'w+', encoding='UTF-8') as file:
             for item in lst:
                 file.write(f"{item}\n")
-        print(f"## File created on {os.getcwd()}/{out_path}/links.txt")
+        print(f"## File created on {os.getcwd()}/{input_file}")
 
         if args.extract:
             extractor(website, args.crawl, output_file, input_file, out_path,

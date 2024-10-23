@@ -169,8 +169,21 @@ def main():
 
     args = parser.parse_args()
 
+    now = datetime.datetime.now().strftime("%Y%m%d")
+
+    # Canonicalization of web url and create path for output.
+    website = ''
+    out_path = ''
+
+    if len(args.url) > 0:
+        website = url_canon(args.url, args.verbose)
+        if args.folder is not None:
+            out_path = folder(args.folder, args.verbose)
+        else:
+            out_path = folder(extract_domain(website), args.verbose)
+
     # Parse arguments to variables else initiate variables.
-    input_file = args.input if args.input else ''
+    input_file = args.input if args.input else (out_path + '/' + now + '_links.txt')
     output_file = args.output if args.output else ''
     c_depth = args.cdepth if args.cdepth else 0
     c_pause = args.cpause if args.cpause else 1
@@ -185,30 +198,17 @@ def main():
         check_ip()
         print(('## URL: ' + args.url))
 
-    website = ''
-    out_path = ''
-
-    # Canonicalization of web url and create path for output.
-    if len(args.url) > 0:
-        website = url_canon(args.url, args.verbose)
-        if args.folder is not None:
-            out_path = folder(args.folder, args.verbose)
-        else:
-            out_path = folder(extract_domain(website), args.verbose)
-
     if args.crawl:
         crawler = Crawler(website, c_depth, c_pause, out_path, args.log,
                           args.verbose)
         lst = crawler.crawl()
 
-        now = datetime.datetime.now().strftime("%Y%m%d")
-        with open(out_path + '/' + now + '_links.txt', 'w+', encoding='UTF-8') as file:
+        with open(input_file, 'w+', encoding='UTF-8') as file:
             for item in lst:
                 file.write(f"{item}\n")
-        print(f"## File created on {os.getcwd()}/{out_path}/links.txt")
+        print(f"## File created on {os.getcwd()}/{input_file}")
 
         if args.extract:
-            input_file = out_path + "/links.txt"
             extractor(website, args.crawl, output_file, input_file, out_path,
                       selection_yara)
     else:

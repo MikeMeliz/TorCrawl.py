@@ -17,12 +17,12 @@ def url_canon(website, verbose):
     :param verbose: Boolean - Verbose logging switch.
     :return: String 'website' - normalised result.
     """
-    if not website.startswith("http"):
-        if not website.startswith("www."):
-            website = "www." + website
-            if verbose:
-                print(("## URL fixed: " + website))
-        website = "http://" + website
+    if not website.startswith("https"):
+        # if not website.startswith("www."):
+        #     website = "www." + website
+        #     if verbose:
+        #         print(("## URL fixed: " + website))
+        website = "https://" + website
         if verbose:
             print(("## URL fixed: " + website))
     return website

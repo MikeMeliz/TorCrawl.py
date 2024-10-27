@@ -183,7 +183,7 @@ def main():
             out_path = folder(extract_domain(website), args.verbose)
 
     # Parse arguments to variables else initiate variables.
-    input_file = args.input if args.input else (out_path + '/' + now + '_links.txt')
+    input_file = args.input if args.input else ''
     output_file = args.output if args.output else ''
     c_depth = args.cdepth if args.cdepth else 0
     c_pause = args.cpause if args.cpause else 1
@@ -203,6 +203,9 @@ def main():
                           args.verbose)
         lst = crawler.crawl()
 
+        if args.input == None:
+            input_file = out_path + '/' + now + '_links.txt'
+      
         with open(input_file, 'w+', encoding='UTF-8') as file:
             for item in lst:
                 file.write(f"{item}\n")

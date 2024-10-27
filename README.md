@@ -216,6 +216,9 @@ Feel free to contribute on this project! Just fork it, make any change on your f
 
 ## Changelog
 ```shell
+v1.31:
+    * Fixed Input Link NoneType Error
+    * Fixed name mismatch  
 v1.3:
     * Make yara search optional
 v1.21:

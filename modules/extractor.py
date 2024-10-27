@@ -11,6 +11,8 @@ from http.client import IncompleteRead
 
 from bs4 import BeautifulSoup
 
+from modules.checker import url_canon
+
 
 def text(response=None):
     """ Removes all the garbage from the HTML and takes only text elements
@@ -122,17 +124,20 @@ def intermex(input_file, yara):
     try:
         with open(input_file, 'r') as file:
             for line in file:
-                content = urllib.request.urlopen(line).read()
+                website = url_canon(line, 0)
+                try:
+                    content = urllib.request.urlopen(website).read()
+                except (HTTPError, URLError, InvalidURL) as err:
+                    print(f"## ERROR: {err}. URL: " + website)
+                    continue
                 if yara is not None:
                     full_match_keywords = check_yara(raw=content, yara=yara)
 
                     if len(full_match_keywords) == 0:
                         print(f"No matches in: {line}")
                 print(content)
-    except (HTTPError, URLError, InvalidURL) as err:
-        print(f"Request Error: {err}")
     except IOError as err:
-        print(f"Error: {err}\n## Not valid file")
+        print(f"ERROR: {err}\n## Not valid file. File tried: " + input_file)
 
 
 def outex(website, output_file, out_path, yara):

@@ -175,7 +175,8 @@ def main():
     website = ''
     out_path = ''
 
-    if len(args.url) > 0:
+    if args.input: pass
+    elif len(args.url) > 0:
         website = url_canon(args.url, args.verbose)
         if args.folder is not None:
             out_path = folder(args.folder, args.verbose)
@@ -196,7 +197,7 @@ def main():
 
     if args.verbose:
         check_ip()
-        print(('## URL: ' + args.url))
+        if args.url: print(('## URL: ' + args.url))
 
     if args.crawl:
         crawler = Crawler(website, c_depth, c_pause, out_path, args.log,

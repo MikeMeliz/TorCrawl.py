@@ -173,15 +173,15 @@ def main():
 
     # Canonicalization of web url and create path for output.
     website = ''
-    out_path = ''
+    output_folder = ''
 
     if args.input: pass
     elif len(args.url) > 0:
         website = url_canon(args.url, args.verbose)
         if args.folder is not None:
-            out_path = folder(args.folder, args.verbose)
+            output_folder = folder(args.folder, args.verbose)
         else:
-            out_path = folder(extract_domain(website), args.verbose)
+            output_folder = folder(extract_domain(website), args.verbose)
 
     # Parse arguments to variables else initiate variables.
     input_file = args.input if args.input else ''
@@ -200,12 +200,12 @@ def main():
         if args.url: print(('## URL: ' + args.url))
 
     if args.crawl:
-        crawler = Crawler(website, depth, pause, out_path, args.log,
+        crawler = Crawler(website, depth, pause, output_folder, args.log,
                           args.verbose)
         lst = crawler.crawl()
 
         if args.input is None:
-            input_file = out_path + '/' + now + '_links.txt'
+            input_file = output_folder + '/' + now + '_links.txt'
       
         with open(input_file, 'w+', encoding='UTF-8') as file:
             for item in lst:
@@ -213,10 +213,10 @@ def main():
         print(f"## File created on {os.getcwd()}/{input_file}")
 
         if args.extract:
-            extractor(website, args.crawl, output_file, input_file, out_path,
+            extractor(website, args.crawl, output_file, input_file, output_folder,
                       selection_yara)
     else:
-        extractor(website, args.crawl, output_file, input_file, out_path,
+        extractor(website, args.crawl, output_file, input_file, output_folder,
                   selection_yara)
 
 

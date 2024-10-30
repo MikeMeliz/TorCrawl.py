@@ -50,14 +50,22 @@ def folder(website, verbose):
 
     :param website: String - URL of website to crawl.
     :param verbose: Boolean - Logging level.
-    :return: String 'out_path' - Path of the output folder.
+    :return: String 'output_folder' - Path of the output folder.
     """
-    out_path = website
-    if not os.path.exists(out_path):
-        os.makedirs(out_path)
+    parsed = urlparse(website)
+    if parsed.scheme != '':
+        output_folder = "output/" + urlparse(website).netloc
+    else:
+        output_folder = "output/" + website
+    if not os.path.exists(output_folder):
+        try:
+            os.makedirs(output_folder)
+        except FileExistsError:
+            if verbose:
+                print(f"## Folder exists already: {website}")
     if verbose:
-        print(f"## Folder created: {out_path}")
-    return out_path
+        print(f"## Folder created: {website}")
+    return output_folder
 
 
 def check_tor(verbose):

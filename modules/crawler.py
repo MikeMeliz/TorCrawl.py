@@ -36,7 +36,7 @@ class Crawler:
             return True
         # External links
         elif link.startswith('http') and not link.startswith(self.website):
-            file_path = self.out_path + '/' + now + '_extlinks.txt'
+            file_path = self.out_path + '/' + now + '_ext-links.txt'
             with open(file_path, 'w+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
             return True
@@ -60,7 +60,7 @@ class Crawler:
     def canonical(self, link):
         """ Canonicalization of the link.
 
-        :param link: String
+        :param link: String: URL(s)
         :return: String 'final_link': parsed canonical url.
         """
         # Already formatted

@@ -27,7 +27,7 @@ Extract:
 
 Crawl:
 -c, --crawl       : Crawl website (Default output on /links.txt)
--d, --cdepth      : Set depth of crawl's travel (Default: 1)
+-d, --depth      : Set depth of crawl's travel (Default: 1)
 -z, --exclusions  : Paths that you don't want to include (TODO)
 -s, --simultaneous: How many pages to visit at the same time (TODO)
 -p, --pause       : The length of time the crawler will pause
@@ -140,12 +140,12 @@ def main():
     )
     parser.add_argument(
         '-d',
-        '--cdepth',
+        '--depth',
         help='Set depth of crawl\'s travel (Default: 1)'
     )
     parser.add_argument(
         '-p',
-        '--cpause',
+        '--pause',
         help='The length of time the crawler will pause'
     )
     parser.add_argument(
@@ -186,8 +186,8 @@ def main():
     # Parse arguments to variables else initiate variables.
     input_file = args.input if args.input else ''
     output_file = args.output if args.output else ''
-    c_depth = args.cdepth if args.cdepth else 0
-    c_pause = args.cpause if args.cpause else 1
+    depth = args.depth if args.depth else 0
+    pause = args.pause if args.pause else 1
     selection_yara = args.yara if args.yara else None
 
     # Connect to TOR
@@ -200,11 +200,11 @@ def main():
         if args.url: print(('## URL: ' + args.url))
 
     if args.crawl:
-        crawler = Crawler(website, c_depth, c_pause, out_path, args.log,
+        crawler = Crawler(website, depth, pause, out_path, args.log,
                           args.verbose)
         lst = crawler.crawl()
 
-        if args.input == None:
+        if args.input is None:
             input_file = out_path + '/' + now + '_links.txt'
       
         with open(input_file, 'w+', encoding='UTF-8') as file:

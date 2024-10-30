@@ -87,11 +87,11 @@ def check_ip():
     """ Checks users IP from external resource.
     :return: None or HTTPError
     """
-    addr = 'https://api.ipify.org/?format=json'
+    api_address = 'https://api.ipify.org/?format=json'
     try:
-        my_ip = load(urlopen(addr))['ip']
+        my_ip = load(urlopen(api_address))['ip']
         print(f'## Your IP: {my_ip}')
     except HTTPError as err:
         error = sys.exc_info()[0]
-        print(f"Error: {error} \n## IP cannot be obtained. \n## Is {addr} up? "
+        print(f"Error: {error} \n## IP cannot be obtained. \n## Is {api_address} up? "
               f"\n## HTTPError: {err}")

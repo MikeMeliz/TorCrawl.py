@@ -22,7 +22,7 @@ class TestCheckFunctions(unittest.TestCase):
         Returns true if the function successfully performs URL normalisation.
         """
         url = 'torcrawl.com'
-        expected = 'http://www.torcrawl.com'
+        expected = 'https://torcrawl.com'
         result = url_canon(url, False)
         self.assertEqual(expected, result,
                          f'Test Fail:: expected = {expected}, got {result}')
@@ -32,7 +32,7 @@ class TestCheckFunctions(unittest.TestCase):
         Returns true if the function successfully performs URL normalisation.
         """
         url = 'www.torcrawl.com'
-        expected = 'http://www.torcrawl.com'
+        expected = 'https://www.torcrawl.com'
         result = url_canon(url, False)
         self.assertEqual(expected, result,
                          f'Test Fail:: expected = {expected}, got {result}')

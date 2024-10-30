@@ -132,8 +132,8 @@ class Crawler:
 
                 try:
                     soup = BeautifulSoup(html_page, features="html.parser")
-                except TypeError as err:
-                    print(f"## Soup Error Encountered:: could to parse "
+                except TypeError:
+                    print(f"## Soup Error Encountered:: couldn't parse "
                           f"ord_list # {ord_lst_ind}::{ord_lst[ord_lst_ind]}")
                     continue
 

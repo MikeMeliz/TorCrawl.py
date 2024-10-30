@@ -11,14 +11,14 @@ python torcrawl.py -v -w -u http://www.github.com -c -d 2 -p 5 -e -f GitHub
 
 General:
 -h, --help         : Help
--v, --verbose      : Show more informations about the progress
+-v, --verbose      : Show more information about the progress
 -u, --url *.onion  : URL of Webpage to crawl or extract
 -w, --without      : Without the use of Relay TOR
 
 Extract:
 -e, --extract           : Extract page's code to terminal or file.
-                          (Defualt: terminal)
--i, --input filename    : Input file with URL(s) (seperated by line)
+                          (Default: terminal)
+-i, --input filename    : Input file with URL(s) (separated by line)
 -o, --output [filename] : Output page(s) to file(s) (for one page)
 -y, --yara              : Yara keyword search page categorisation
                             read in from /res folder. 
@@ -123,7 +123,7 @@ def main():
     parser.add_argument(
         '-i',
         '--input',
-        help='Input file with URL(s) (seperated by line)'
+        help='Input file with URL(s) (separated by line)'
     )
     parser.add_argument(
         '-o',

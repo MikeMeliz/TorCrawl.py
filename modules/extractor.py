@@ -9,6 +9,7 @@ from urllib.error import URLError
 from http.client import InvalidURL
 from http.client import IncompleteRead
 from bs4 import BeautifulSoup
+from pathlib import Path
 
 from modules.checker import url_canon
 
@@ -64,6 +65,7 @@ def input_file_to_folder(input_file, output_path, yara=None):
     :param yara: Integer: Keyword search argument.
     :return: None
     """
+    i = 0
     file = io.TextIOWrapper
     try:
         file = open(input_file, 'r')
@@ -96,7 +98,12 @@ def input_file_to_folder(input_file, output_path, yara=None):
                     print('No matches found.')
                     continue
 
-            with open(output_path + "/" + output_file, 'wb') as results:
+            # Add an incremental in case of existing filename (eg. index.htm)
+            filename = Path(output_path + "/" + output_file)
+            if filename.is_file():
+                i += 1
+                filename = output_path + "/" + output_file + "(" + str(i) + ")"
+            with open(filename, 'wb') as results:
                 results.write(content)
             print(f"# File created on: {os.getcwd()}/{output_path}/{output_file}")
         except HTTPError as e:

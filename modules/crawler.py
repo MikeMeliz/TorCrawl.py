@@ -26,7 +26,7 @@ class Crawler:
         :param link: String
         :return: Boolean
         """
-        now = datetime.datetime.now().strftime("%Y%m%d")
+        now = datetime.datetime.now().strftime("%y%m%d")
 
         # BUG: For NoneType Exceptions, got to find a solution here
         if link is None:

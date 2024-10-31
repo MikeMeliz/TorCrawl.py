@@ -50,14 +50,22 @@ def folder(website, verbose):
 
     :param website: String - URL of website to crawl.
     :param verbose: Boolean - Logging level.
-    :return: String 'out_path' - Path of the output folder.
+    :return: String 'output_folder' - Path of the output folder.
     """
-    out_path = website
-    if not os.path.exists(out_path):
-        os.makedirs(out_path)
+    parsed = urlparse(website)
+    if parsed.scheme != '':
+        output_folder = "output/" + urlparse(website).netloc
+    else:
+        output_folder = "output/" + website
+    if not os.path.exists(output_folder):
+        try:
+            os.makedirs(output_folder)
+        except FileExistsError:
+            if verbose:
+                print(f"## Folder exists already: {website}")
     if verbose:
-        print(f"## Folder created: {out_path}")
-    return out_path
+        print(f"## Folder created: {website}")
+    return output_folder
 
 
 def check_tor(verbose):
@@ -87,11 +95,11 @@ def check_ip():
     """ Checks users IP from external resource.
     :return: None or HTTPError
     """
-    addr = 'https://api.ipify.org/?format=json'
+    api_address = 'https://api.ipify.org/?format=json'
     try:
-        my_ip = load(urlopen(addr))['ip']
+        my_ip = load(urlopen(api_address))['ip']
         print(f'## Your IP: {my_ip}')
     except HTTPError as err:
         error = sys.exc_info()[0]
-        print(f"Error: {error} \n## IP cannot be obtained. \n## Is {addr} up? "
+        print(f"Error: {error} \n## IP cannot be obtained. \n## Is {api_address} up? "
               f"\n## HTTPError: {err}")

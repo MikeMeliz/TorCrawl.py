@@ -11,14 +11,14 @@ python torcrawl.py -v -w -u http://www.github.com -c -d 2 -p 5 -e -f GitHub
 
 General:
 -h, --help         : Help
--v, --verbose      : Show more informations about the progress
+-v, --verbose      : Show more information about the progress
 -u, --url *.onion  : URL of Webpage to crawl or extract
 -w, --without      : Without the use of Relay TOR
 
 Extract:
 -e, --extract           : Extract page's code to terminal or file.
-                          (Defualt: terminal)
--i, --input filename    : Input file with URL(s) (seperated by line)
+                          (Default: terminal)
+-i, --input filename    : Input file with URL(s) (separated by line)
 -o, --output [filename] : Output page(s) to file(s) (for one page)
 -y, --yara              : Yara keyword search page categorisation
                             read in from /res folder. 
@@ -27,7 +27,7 @@ Extract:
 
 Crawl:
 -c, --crawl       : Crawl website (Default output on /links.txt)
--d, --cdepth      : Set depth of crawl's travel (Default: 1)
+-d, --depth      : Set depth of crawl's travel (Default: 1)
 -z, --exclusions  : Paths that you don't want to include (TODO)
 -s, --simultaneous: How many pages to visit at the same time (TODO)
 -p, --pause       : The length of time the crawler will pause
@@ -123,7 +123,7 @@ def main():
     parser.add_argument(
         '-i',
         '--input',
-        help='Input file with URL(s) (seperated by line)'
+        help='Input file with URL(s) (separated by line)'
     )
     parser.add_argument(
         '-o',
@@ -140,12 +140,12 @@ def main():
     )
     parser.add_argument(
         '-d',
-        '--cdepth',
+        '--depth',
         help='Set depth of crawl\'s travel (Default: 1)'
     )
     parser.add_argument(
         '-p',
-        '--cpause',
+        '--pause',
         help='The length of time the crawler will pause'
     )
     parser.add_argument(
@@ -169,25 +169,25 @@ def main():
 
     args = parser.parse_args()
 
-    now = datetime.datetime.now().strftime("%Y%m%d")
+    now = datetime.datetime.now().strftime("%y%m%d")
 
     # Canonicalization of web url and create path for output.
     website = ''
-    out_path = ''
+    output_folder = ''
 
     if args.input: pass
     elif len(args.url) > 0:
         website = url_canon(args.url, args.verbose)
         if args.folder is not None:
-            out_path = folder(args.folder, args.verbose)
+            output_folder = folder(args.folder, args.verbose)
         else:
-            out_path = folder(extract_domain(website), args.verbose)
+            output_folder = folder(extract_domain(website), args.verbose)
 
     # Parse arguments to variables else initiate variables.
     input_file = args.input if args.input else ''
     output_file = args.output if args.output else ''
-    c_depth = args.cdepth if args.cdepth else 0
-    c_pause = args.cpause if args.cpause else 1
+    depth = args.depth if args.depth else 0
+    pause = args.pause if args.pause else 0
     selection_yara = args.yara if args.yara else None
 
     # Connect to TOR
@@ -200,12 +200,12 @@ def main():
         if args.url: print(('## URL: ' + args.url))
 
     if args.crawl:
-        crawler = Crawler(website, c_depth, c_pause, out_path, args.log,
+        crawler = Crawler(website, depth, pause, output_folder, args.log,
                           args.verbose)
         lst = crawler.crawl()
 
-        if args.input == None:
-            input_file = out_path + '/' + now + '_links.txt'
+        if args.input is None:
+            input_file = output_folder + '/' + now + '_links.txt'
       
         with open(input_file, 'w+', encoding='UTF-8') as file:
             for item in lst:
@@ -213,10 +213,10 @@ def main():
         print(f"## File created on {os.getcwd()}/{input_file}")
 
         if args.extract:
-            extractor(website, args.crawl, output_file, input_file, out_path,
+            extractor(website, args.crawl, output_file, input_file, output_folder,
                       selection_yara)
     else:
-        extractor(website, args.crawl, output_file, input_file, out_path,
+        extractor(website, args.crawl, output_file, input_file, output_folder,
                   selection_yara)
 
 

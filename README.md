@@ -51,12 +51,12 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
 ## Installation
 
 ### Easy Installation with pip:
-*Comming soon..*
+*Coming soon...*
 
 ### Manual Installation:
 1. **Clone this repository**:<br>
 `git clone https://github.com/MikeMeliz/TorCrawl.py.git`
-2. **Install dependecies**:<br>
+2. **Install dependencies**:<br>
 `pip install -r requirements.txt`
 3. **Install and Start TOR Service**:
     1. **Debian/Ubuntu**: <br>
@@ -82,12 +82,12 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
 -f  |--folder| The directory which will contain the generated files
 **Extract**: | |
 -e  |--extract| Extract page's code to terminal or file (Default: Terminal)
--i  |--input filename| Input file with URL(s) (seperated by line)
+-i  |--input filename| Input file with URL(s) (separated by line)
 -o  |--output [filename]| Output page(s) to file(s) (for one page)
 -y  |--yara | Perform yara keyword search:<br>h = search entire html object,<br>t = search only text
 **Crawl**: | |
 -c  |--crawl| Crawl website (Default output on website/links.txt)
--d  |--cdepth| Set depth of crawler's travel (Default: 1)
+-d  |--depth| Set depth of crawler's travel (Default: 1)
 -p  |--pause| Seconds of pause between requests (Default: 0)
 -l  |--log| Log file with visited URLs and their response code
 
@@ -134,8 +134,7 @@ $ python torcrawl.py -i links.txt
 
 
 ### As Crawler:
-Crawl the links of the webpage without the use of TOR,
-also show verbose output (really helpfull):
+Crawl the links of the webpage without the use of TOR, also show verbose output (really helpful):
 
 ```shell
 $ python torcrawl.py -v -w -u http://www.github.com/ -c
@@ -216,6 +215,10 @@ Feel free to contribute on this project! Just fork it, make any change on your f
 
 ## Changelog
 ```shell
+v1.32:
+    * Removed 1 second default pause between requests
+    * Several improvements on results
+    * Improved logs
 v1.31:
     * Fixed Input Link NoneType Error
     * Fixed name mismatch  

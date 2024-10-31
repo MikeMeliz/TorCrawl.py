@@ -20,8 +20,7 @@ class TestCrawlerFunctions(unittest.TestCase):
 
     def test_excludes(self):
         """ Test crawler.excludes function.
-        Return True if the function successfully excludes the the provided
-        failing links.
+        Return True if the function successfully excludes the provided failing links.
         """
         _uri = 'http://www.torcrawl.com'
         failing_links = ['#', 'tel:012-013-104-5',
@@ -38,7 +37,7 @@ class TestCrawlerFunctions(unittest.TestCase):
         Return True if the function successfully normalizes the provided
         failing links.
         """
-        _uri = 'http://www.torcrawl.com/'
+        _uri = 'https://torcrawl.com/'
         links = [[f'{_uri}sundance', f'{_uri}sundance'],
                  ['/sundance', f'{_uri}sundance'],
                  [f'{_uri}bob.html', f'{_uri}bob.html'],

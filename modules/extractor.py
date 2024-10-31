@@ -8,8 +8,8 @@ from urllib.error import HTTPError
 from urllib.error import URLError
 from http.client import InvalidURL
 from http.client import IncompleteRead
-
 from bs4 import BeautifulSoup
+from pathlib import Path
 
 from modules.checker import url_canon
 
@@ -55,16 +55,17 @@ def check_yara(raw=None, yara=0):
         return matches
 
 
-def cinex(input_file, out_path, yara=None):
+def input_file_to_folder(input_file, output_path, yara=None):
     """ Ingests the crawled links from the input_file,
     scrapes the contents of the resulting web pages and writes the contents to
     the into out_path/{url_address}.
 
     :param input_file: String: Filename of the crawled Urls.
-    :param out_path: String: Pathname of results.
+    :param output_path: String: Pathname of results.
     :param yara: Integer: Keyword search argument.
     :return: None
     """
+    i = 0
     file = io.TextIOWrapper
     try:
         file = open(input_file, 'r')
@@ -92,21 +93,25 @@ def cinex(input_file, out_path, yara=None):
 
             if yara is not None:
                 full_match_keywords = check_yara(content, yara)
-
                 if len(full_match_keywords) == 0:
                     print('No matches found.')
                     continue
 
-            with open(out_path + "/" + output_file, 'wb') as results:
+            # Add an incremental in case of existing filename (eg. index.htm)
+            filename = Path(output_path + "/" + output_file)
+            if filename.is_file():
+                i += 1
+                filename = output_path + "/" + output_file + "(" + str(i) + ")"
+            with open(filename, 'wb') as results:
                 results.write(content)
-            print(f"# File created on: {os.getcwd()}/{out_path}/{output_file}")
+            print(f"# File created on: {os.getcwd()}/{filename}")
         except HTTPError as e:
-            print(f"Cinex Error: {e.code}, cannot access: {e.url}")
+            print(f"Error: {e.code}, cannot access: {e.url}")
             continue
-        except InvalidURL as e:
-            print(f"Invalid URL: {line} \n Skipping...")
+        except InvalidURL:
+            print(f"Invalid URL: {line}, \n Skipping...")
             continue
-        except IncompleteRead as e:
+        except IncompleteRead:
             print(f"IncompleteRead on {line}")
             continue
         except IOError as err:
@@ -114,7 +119,7 @@ def cinex(input_file, out_path, yara=None):
     file.close()
 
 
-def intermex(input_file, yara):
+def input_file_to_terminal(input_file, yara):
     """ Input links from file and extract them into terminal.
 
     :param input_file: String: File name of links file.
@@ -140,19 +145,19 @@ def intermex(input_file, yara):
         print(f"ERROR: {err}\n## Not valid file. File tried: " + input_file)
 
 
-def outex(website, output_file, out_path, yara):
+def url_to_folder(website, output_file, output_path, yara):
     """ Scrapes the contents of the provided web address and outputs the
     contents to file.
 
     :param website: String: Url of web address to scrape.
     :param output_file: String: Filename of the results.
-    :param out_path: String: Folder name of the output findings.
+    :param output_path: String: Folder name of the output findings.
     :param yara: Integer: Keyword search argument.
     :return: None
     """
     # Extract page to file
     try:
-        output_file = out_path + "/" + output_file
+        output_file = output_path + "/" + output_file
         content = urllib.request.urlopen(website).read()
 
         if yara is not None:
@@ -170,7 +175,7 @@ def outex(website, output_file, out_path, yara):
         print(f"Error: {err}\n Can't write on file: {output_file}")
 
 
-def termex(website, yara):
+def url_to_terminal(website, yara):
     """ Scrapes provided web address and prints the results to the terminal.
 
     :param website: String: URL of website to scrape.
@@ -193,29 +198,28 @@ def termex(website, yara):
         return
 
 
-def extractor(website, crawl, output_file, input_file, out_path, selection_yara):
+def extractor(website, crawl, output_file, input_file, output_path, selection_yara):
     """ Extractor - scrapes the resulting website or discovered links.
 
     :param website: String: URL of website to scrape.
-    :param crawl: Boolean: Cinex trigger.
+    :param crawl: Boolean: input_file_to_folder trigger.
         If used iteratively scrape the urls from input_file.
     :param output_file: String: Filename of resulting output from scrape.
     :param input_file: String: Filename of crawled/discovered URLs
-    :param out_path: String: Dir path for output files.
+    :param output_path: String: Dir path for output files.
     :param selection_yara: String: Selected option of HTML or Text.
     :return: None
     """
-    # TODO: Return output to torcrawl.py
     if len(input_file) > 0:
         if crawl:
-            cinex(input_file, out_path, selection_yara)
+            input_file_to_folder(input_file, output_path, selection_yara)
         # TODO: Extract from list into a folder
         # elif len(output_file) > 0:
-        # 	inoutex(website, input_ile, output_file)
+        # 	input_list_to_folder(website, input_ile, output_file)
         else:
-            intermex(input_file, selection_yara)
+            input_file_to_terminal(input_file, selection_yara)
     else:
         if len(output_file) > 0:
-            outex(website, output_file, out_path, selection_yara)
+            url_to_folder(website, output_file, output_path, selection_yara)
         else:
-            termex(website, selection_yara)
+            url_to_terminal(website, selection_yara)

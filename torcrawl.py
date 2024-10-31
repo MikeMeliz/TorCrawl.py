@@ -187,7 +187,7 @@ def main():
     input_file = args.input if args.input else ''
     output_file = args.output if args.output else ''
     depth = args.depth if args.depth else 0
-    pause = args.pause if args.pause else 1
+    pause = args.pause if args.pause else 0
     selection_yara = args.yara if args.yara else None
 
     # Connect to TOR

@@ -168,7 +168,7 @@ class Crawler:
                     if ver_link is not None:
                         lst.add(ver_link)
 
-                # TODO: For non-formal links, using RegEx
+                # TODO: For non-formal links, using RegEx, should be an additional parameter, and all patterns to be stored in a file
                 # url_pattern = r'/(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[A-Z0-9+&@#\/%=~_|$])/igm'
                 # html_content = urllib.request.urlopen(self.website).read().decode('utf-8')
                 
@@ -198,9 +198,8 @@ class Crawler:
                     sys.stdout.write("\033[K -- Results: " + str(len(ord_lst)) + " | Scanned: [" + str(it_code) + "] " + str(item) + "\r")
                     sys.stdout.flush()
 
-                # Pause time.
-                if (ord_lst.index(item) != len(ord_lst) - 1) and \
-                        float(self.c_pause) > 0:
+                # Add Pause time between each iteration
+                if (ord_lst.index(item) != len(ord_lst) - 1) and float(self.c_pause) > 0:
                     time.sleep(float(self.c_pause))
 
             print(f"\033[K## Step {str(index + 1)} completed "

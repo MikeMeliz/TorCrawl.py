@@ -93,7 +93,6 @@ def input_file_to_folder(input_file, output_path, yara=None):
 
             if yara is not None:
                 full_match_keywords = check_yara(content, yara)
-
                 if len(full_match_keywords) == 0:
                     print('No matches found.')
                     continue
@@ -105,7 +104,7 @@ def input_file_to_folder(input_file, output_path, yara=None):
                 filename = output_path + "/" + output_file + "(" + str(i) + ")"
             with open(filename, 'wb') as results:
                 results.write(content)
-            print(f"# File created on: {os.getcwd()}/{output_path}/{output_file}")
+            print(f"# File created on: {os.getcwd()}/{filename}")
         except HTTPError as e:
             print(f"Error: {e.code}, cannot access: {e.url}")
             continue

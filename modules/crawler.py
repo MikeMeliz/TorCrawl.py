@@ -83,6 +83,20 @@ class Crawler:
                 final_link = self.website + "/" + link
             return final_link
 
+    def write_log(self, log):
+        log_path = self.out_path + '/crawler.log'
+        now = datetime.datetime.now()
+
+        if self.logs is True:
+            open(log_path, 'a+')
+            if self.logs is True and os.access(log_path, os.W_OK) is False:
+                print(f"## Unable to write to {self.out_path}/log.txt - Exiting")
+                sys.exit(2)
+            with open(log_path, 'a+', encoding='UTF-8') as log_file:
+                log_file.write(str(now) + " [crawler.py] " + log)
+                log_file.close()
+
+
     def crawl(self):
         """ Core of the crawler.
         :return: List (ord_lst) - List of crawled links.
@@ -91,11 +105,6 @@ class Crawler:
         ord_lst = []
         ord_lst.insert(0, self.website)
         ord_lst_ind = 0
-        log_path = self.out_path + '/log.txt'
-
-        if self.logs is True and os.access(log_path, os.W_OK) is False:
-            print(f"## Unable to write to {self.out_path}/log.txt - Exiting")
-            sys.exit(2)
 
         print(f"## Crawler started from {self.website} with "
               f"{str(self.c_depth)} depth crawl, and {str(self.c_pause)} "
@@ -180,8 +189,13 @@ class Crawler:
                 ord_lst = ord_lst + list(set(lst))
                 ord_lst = list(set(ord_lst))
 
+                # Keeps logs for every webpage visited.
+                it_code = html_page.getcode()
+                url_visited = f"[{str(it_code)}] {str(item)} \n"
+                self.write_log("[INFO] Logged: " + url_visited)
+
                 if self.verbose:
-                    sys.stdout.write("-- Results: " + str(len(ord_lst)) + "\r")
+                    sys.stdout.write("\033[K -- Results: " + str(len(ord_lst)) + " | Scanned: [" + str(it_code) + "] " + str(item) + "\r")
                     sys.stdout.flush()
 
                 # Pause time.
@@ -189,13 +203,7 @@ class Crawler:
                         float(self.c_pause) > 0:
                     time.sleep(float(self.c_pause))
 
-                # Keeps logs for every webpage visited.
-                if self.logs:
-                    it_code = html_page.getcode()
-                    with open(log_path, 'w+', encoding='UTF-8') as log_file:
-                        log_file.write(f"[{str(it_code)}] {str(item)} \n")
-
-            print(f"## Step {str(index + 1)} completed "
+            print(f"\033[K## Step {str(index + 1)} completed "
                   f"with: {str(len(ord_lst))} result(s)")
 
         return ord_lst

@@ -53,8 +53,10 @@ class Crawler:
                 lst_file.write(str(link) + '\n')
             return True
         # Type of files
-        elif re.search('^.*\\.(pdf|jpg|jpeg|png|gif|doc)$', link,
-                       re.IGNORECASE):
+        elif re.search('^.*\\.(pdf|jpg|jpeg|png|gif|doc)$', link, re.IGNORECASE):
+            file_path = self.out_path + '/' + now + '_files.txt'
+            with open(file_path, 'a+', encoding='UTF-8') as lst_file:
+                lst_file.write(str(link) + '\n')
             return True
 
     def canonical(self, link):
@@ -122,20 +124,16 @@ class Crawler:
                         if item is not None:
                             html_page = urllib.request.urlopen(item)
                     except (HTTPError, URLError) as error:
-                        print('## ERROR: Domain or link seems to be '
-                              'unreachable. Add -v to see the verbose error.'
-                              'Or write the full URL at -u argument!')
-                        if self.verbose: print(error)
+                        self.write_log(f"[INFO] ERROR: Domain or link seems to be unreachable: {str(item)} | "
+                                       f"Message: {error}\n")
                         continue
                 else:
                     try:
                         html_page = urllib.request.urlopen(self.website)
                         ord_lst_ind += 1
                     except (HTTPError, URLError) as error:
-                        print('## ERROR: Domain or link seems to be '
-                              'unreachable. Add -v to see the verbose error.'
-                              'Or write the full URL at -u argument!')
-                        if self.verbose: print(error)
+                        self.write_log(f"[INFO] ERROR: Domain or link seems to be unreachable: {str(item)} | "
+                                       f"Message: {error}\n")
                         ord_lst_ind += 1
                         continue
 
@@ -190,19 +188,19 @@ class Crawler:
                 ord_lst = list(set(ord_lst))
 
                 # Keeps logs for every webpage visited.
-                it_code = html_page.getcode()
-                url_visited = f"[{str(it_code)}] {str(item)} \n"
-                self.write_log("[INFO] Logged: " + url_visited)
+                page_code = html_page.status
+                url_visited = f"[{str(page_code)}] {str(item)} \n"
+                self.write_log("[INFO] Parsed: " + url_visited)
 
                 if self.verbose:
-                    sys.stdout.write("\033[K -- Results: " + str(len(ord_lst)) + " | Scanned: [" + str(it_code) + "] " + str(item) + "\r")
+                    sys.stdout.write(" -- Results: " + str(len(ord_lst)) + "\r")
                     sys.stdout.flush()
 
                 # Add Pause time between each iteration
                 if (ord_lst.index(item) != len(ord_lst) - 1) and float(self.c_pause) > 0:
                     time.sleep(float(self.c_pause))
 
-            print(f"\033[K## Step {str(index + 1)} completed "
+            print(f"## Step {str(index + 1)} completed "
                   f"with: {str(len(ord_lst))} result(s)")
 
         return ord_lst

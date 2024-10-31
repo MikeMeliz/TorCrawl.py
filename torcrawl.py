@@ -169,7 +169,7 @@ def main():
 
     args = parser.parse_args()
 
-    now = datetime.datetime.now().strftime("%Y%m%d")
+    now = datetime.datetime.now().strftime("%y%m%d")
 
     # Canonicalization of web url and create path for output.
     website = ''

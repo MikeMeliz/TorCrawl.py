@@ -37,19 +37,19 @@ class Crawler:
         # External links
         elif link.startswith('http') and not link.startswith(self.website):
             file_path = self.out_path + '/' + now + '_ext-links.txt'
-            with open(file_path, 'w+', encoding='UTF-8') as lst_file:
+            with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
             return True
         # Telephone Number
         elif link.startswith('tel:'):
             file_path = self.out_path + '/' + now + '_telephones.txt'
-            with open(file_path, 'w+', encoding='UTF-8') as lst_file:
+            with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
             return True
         # Mails
         elif link.startswith('mailto:'):
             file_path = self.out_path + '/' + now + '_mails.txt'
-            with open(file_path, 'w+', encoding='UTF-8') as lst_file:
+            with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
             return True
         # Type of files

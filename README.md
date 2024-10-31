@@ -215,6 +215,10 @@ Feel free to contribute on this project! Just fork it, make any change on your f
 
 ## Changelog
 ```shell
+v1.32:
+    * Removed 1 second default pause between requests
+    * Several improvements on results
+    * Improved logs
 v1.31:
     * Fixed Input Link NoneType Error
     * Fixed name mismatch  

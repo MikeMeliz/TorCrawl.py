@@ -15,7 +15,7 @@ class TestCheckFunctions(unittest.TestCase):
     def tearDownClass(cls):
         """ Test Suite Teardown. """
         # Remove test folder.
-        os.rmdir('torcrawl')
+        os.rmdir('output/torcrawl')
 
     def test_url_canon_001(self):
         """ url_canon unit test.

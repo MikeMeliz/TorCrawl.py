@@ -14,8 +14,9 @@
   [![Release][release-version-shield]][releases-link]
   [![Last Commit][last-commit-shield]][commit-link]
   ![Python][python-version-shield]
+  [![Quality Gate Status][quality-gate-shield]][quality-gate-link]
   [![license][license-shield]][license-link]
-    
+
 </div>
 
 ### What makes it simple and easy to use?
@@ -43,7 +44,7 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
 ```
 
 > [!TIP]  
-> Crawling is not illegal, but violating copyright *is*. It’s always best to double check a website’s T&C before start crawling them. Some websites set up what’s called `robots.txt` to tell crawlers not to visit those pages.
+> Crawling is not illegal, but violating copyright *is*. It’s always best to double-check a website’s T&C before start crawling them. Some websites set up what’s called `robots.txt` to tell crawlers not to visit those pages.
 > <br>This crawler *will* allow you to go around this, but we always *recommend* respecting robots.txt.
 
 <hr>
@@ -62,34 +63,34 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
     1. **Debian/Ubuntu**: <br>
         `apt-get install tor`<br>
         `service tor start`
-    3. **Windows**: Download [`tor.exe`][tor-download], and:<br>
+    2. **Windows**: Download [`tor.exe`][tor-download], and:<br>
         `tor.exe --service install`<br>
         `tor.exe --service start`
-    5. **MacOS**: <br>
+    3. **MacOS**: <br>
         `brew install tor`<br>
         `brew services start tor`
-    6. For different distros, visit:<br>
+    4. For different distros, visit:<br>
        [TOR Setup Documentation][tor-docs]
 
 ## Arguments
-**arg** | **Long** | **Description**
-----|------|------------
-**General**: | |
--h  |--help| Help message
--v  |--verbose| Show more information about the progress 
--u  |--url *.onion| URL of Webpage to crawl or extract
--w  |--without| Without using TOR Network
--f  |--folder| The directory which will contain the generated files
-**Extract**: | |
--e  |--extract| Extract page's code to terminal or file (Default: Terminal)
--i  |--input filename| Input file with URL(s) (separated by line)
--o  |--output [filename]| Output page(s) to file(s) (for one page)
--y  |--yara | Perform yara keyword search:<br>h = search entire html object,<br>t = search only text
-**Crawl**: | |
--c  |--crawl| Crawl website (Default output on website/links.txt)
--d  |--depth| Set depth of crawler's travel (Default: 1)
--p  |--pause| Seconds of pause between requests (Default: 0)
--l  |--log| Log file with visited URLs and their response code
+| **arg**      | **Long**            | **Description**                                                                        |
+|--------------|---------------------|----------------------------------------------------------------------------------------|
+| **General**: |                     |                                                                                        |
+| -h           | --help              | Help message                                                                           |
+| -v           | --verbose           | Show more information about the progress                                               |
+| -u           | --url *.onion       | URL of Webpage to crawl or extract                                                     |
+| -w           | --without           | Without using TOR Network                                                              |
+| -f           | --folder            | The directory which will contain the generated files                                   |
+| **Extract**: |                     |                                                                                        |
+| -e           | --extract           | Extract page's code to terminal or file (Default: Terminal)                            |
+| -i           | --input filename    | Input file with URL(s) (separated by line)                                             |
+| -o           | --output [filename] | Output page(s) to file(s) (for one page)                                               |
+| -y           | --yara              | Perform yara keyword search:<br>h = search entire html object,<br>t = search only text |
+| **Crawl**:   |                     |                                                                                        |
+| -c           | --crawl             | Crawl website (Default output on website/links.txt)                                    |
+| -d           | --depth             | Set depth of crawler's travel (Default: 1)                                             |
+| -p           | --pause             | Seconds of pause between requests (Default: 0)                                         |
+| -l           | --log               | Log file with visited URLs and their response code                                     |
 
 ## Usage & Examples
 
@@ -240,6 +241,8 @@ v1.2:
 [last-commit-shield]: https://img.shields.io/github/last-commit/MikeMeliz/TorCrawl.py?logo=github&label=Last%20Commit&style=plastic
 [release-version-shield]: https://img.shields.io/github/v/release/MikeMeliz/TorCrawl.py?logo=github&label=Release&style=plastic
 [python-version-shield]: https://img.shields.io/badge/Python-v3-green.svg?style=plastic&logo=python&label=Python
+[quality-gate-shield]: https://sonarcloud.io/api/project_badges/measure?project=MikeMeliz_TorCrawl.py&metric=alert_status
+[quality-gate-link]: https://sonarcloud.io/summary/new_code?id=MikeMeliz_TorCrawl.py
 [license-shield]: https://img.shields.io/github/license/MikeMeliz/TorCrawl.py.svg?style=plastic&logo=gnu&label=License
 [commit-link]: https://github.com/MikeMeliz/TorCrawl.py/commits/main
 [releases-link]: https://github.com/MikeMeliz/TorCrawl.py/releases

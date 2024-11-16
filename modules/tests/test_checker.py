@@ -19,7 +19,7 @@ class TestCheckFunctions(unittest.TestCase):
 
     def test_url_canon_001(self):
         """ url_canon unit test.
-        Returns true if the function successfully performs URL normalisation.
+        Returns true if the function successfully adds 'https://'.
         """
         url = 'torcrawl.com'
         expected = 'https://torcrawl.com'
@@ -29,9 +29,29 @@ class TestCheckFunctions(unittest.TestCase):
 
     def test_url_canon_002(self):
         """ url_canon unit test.
-        Returns true if the function successfully performs URL normalisation.
+        Returns true if the function successfully adds 'https://' over `www.`.
         """
         url = 'www.torcrawl.com'
+        expected = 'https://www.torcrawl.com'
+        result = url_canon(url, False)
+        self.assertEqual(expected, result,
+                         f'Test Fail:: expected = {expected}, got {result}')
+
+    def test_url_canon_003(self):
+        """ url_canon unit test.
+        Returns true if the function doesn't change `http://`.
+        """
+        url = 'http://www.torcrawl.com'
+        expected = 'http://www.torcrawl.com'
+        result = url_canon(url, False)
+        self.assertEqual(expected, result,
+                         f'Test Fail:: expected = {expected}, got {result}')
+
+    def test_url_canon_004(self):
+        """ url_canon unit test.
+        Returns true if the function doesn't change `https://`.
+        """
+        url = 'https://www.torcrawl.com'
         expected = 'https://www.torcrawl.com'
         result = url_canon(url, False)
         self.assertEqual(expected, result,

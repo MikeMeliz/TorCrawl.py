@@ -14,7 +14,7 @@ We take security issues seriously and will respond promptly to mitigate any risk
 #### To report a security vulnerability:
 
 1. Do not open a public issue on GitHub.
-2. Send a LinkedIn InMail or message to the project owner at: `www.linkedin.com/mike-meli`
+2. Open a new [Security Advisory](https://github.com/MikeMeliz/TorCrawl.py/security/advisories/new).
 3. Provide detailed information about the vulnerability, including:
    - Description of the issue,
    - Steps to reproduce (if applicable),

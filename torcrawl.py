@@ -60,14 +60,13 @@ from modules.extractor import extractor
 
 
 # Set socket and connection with TOR network
-def connect_tor():
+def connect_tor(proxy_url, proxy_port):
     """ Connect to TOR via DNS resolution through a socket.
     :return: None or HTTPError.
     """
     try:
-        port = 9050
         # Set socks proxy and wrap the urllib module
-        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', port)
+        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy_url, proxy_port)
         socket.socket = socks.socksocket
 
         # Perform DNS resolution through the socket
@@ -166,6 +165,16 @@ def main():
         help='Check for keywords and only scrape documents that contain a '
              'match. \'h\' search whole html object. \'t\' search only the text.'
     )
+    parser.add_argument(
+        '-pr',
+        '--proxyport',
+        help='Port for SOCKS5 proxy',default=9050
+    )
+    parser.add_argument(
+        '-px',
+        '--proxy',
+        help='IP address for SOCKS5 proxy',default='127.0.0.1'
+    )
 
     args = parser.parse_args()
 
@@ -193,7 +202,7 @@ def main():
     # Connect to TOR
     if args.without is False:
         check_tor(args.verbose)
-        connect_tor()
+        connect_tor(args.proxy, args.proxyport)
 
     if args.verbose:
         check_ip()

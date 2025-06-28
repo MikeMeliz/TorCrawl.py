@@ -80,6 +80,8 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
 | -v           | --verbose           | Show more information about the progress                                               |
 | -u           | --url *.onion       | URL of Webpage to crawl or extract                                                     |
 | -w           | --without           | Without using TOR Network                                                              |
+| -px          | --proxy             | IP address for SOCKS5 proxy (Default: 127.0.0.1 for using TOR)                         |
+| -pr          | --proxyport         | Port for SOCKS5 proxy (Default: 9050)                                                  |
 | -f           | --folder            | The directory which will contain the generated files                                   |
 | **Extract**: |                     |                                                                                        |
 | -e           | --extract           | Extract page's code to terminal or file (Default: Terminal)                            |

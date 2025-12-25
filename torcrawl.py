@@ -14,6 +14,7 @@ General:
 -v, --verbose      : Show more information about the progress
 -u, --url *.onion  : URL of Webpage to crawl or extract
 -w, --without      : Without the use of Relay TOR
+-rua, --random-ua  : Enable random user-agent rotation for requests
 
 Extract:
 -e, --extract           : Extract page's code to terminal or file.
@@ -166,6 +167,12 @@ def main():
              'match. \'h\' search whole html object. \'t\' search only the text.'
     )
     parser.add_argument(
+        '-rua',
+        '--random-ua',
+        action='store_true',
+        help='Enable random user-agent rotation for requests'
+    )
+    parser.add_argument(
         '-pr',
         '--proxyport',
         help='Port for SOCKS5 proxy',default=9050
@@ -198,6 +205,7 @@ def main():
     depth = args.depth if args.depth else 0
     pause = args.pause if args.pause else 0
     selection_yara = args.yara if args.yara else None
+    random_ua = args.random_ua
 
     # Connect to TOR
     if args.without is False:
@@ -210,7 +218,7 @@ def main():
 
     if args.crawl:
         crawler = Crawler(website, depth, pause, output_folder, args.log,
-                          args.verbose)
+                          args.verbose, random_ua)
         lst = crawler.crawl()
 
         if args.input is None:
@@ -223,10 +231,10 @@ def main():
 
         if args.extract:
             extractor(website, args.crawl, output_file, input_file, output_folder,
-                      selection_yara)
+                      selection_yara, random_ua)
     else:
         extractor(website, args.crawl, output_file, input_file, output_folder,
-                  selection_yara)
+                  selection_yara, random_ua)
 
 
 # Stub to call main method.

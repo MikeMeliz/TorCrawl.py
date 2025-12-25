@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 
 from modules.checker import url_canon
+from modules.checker import get_random_user_agent
 
 
 def text(response=None):
@@ -26,6 +27,23 @@ def text(response=None):
         s.decompose()
 
     return ' '.join(soup.stripped_strings)
+
+
+def _make_request_with_ua(url, random_ua=False, timeout=10):
+    """ Makes an HTTP request with optional random user-agent.
+    
+    :param url: String - URL to request
+    :param random_ua: Boolean - Whether to use random user-agent
+    :param timeout: Integer - Request timeout in seconds
+    :return: bytes - Response content
+    """
+    if random_ua:
+        user_agent = get_random_user_agent()
+        if user_agent:
+            req = urllib.request.Request(url, headers={'User-Agent': user_agent})
+            return urllib.request.urlopen(req, timeout=timeout).read()
+    return urllib.request.urlopen(url, timeout=timeout).read()
+
 
 def check_yara(raw=None, yara=0):
     """ Validates Yara Rule to categorize the site and check for keywords.
@@ -55,7 +73,7 @@ def check_yara(raw=None, yara=0):
         return matches
 
 
-def input_file_to_folder(input_file, output_path, yara=None):
+def input_file_to_folder(input_file, output_path, yara=None, random_ua=False):
     """ Ingests the crawled links from the input_file,
     scrapes the contents of the resulting web pages and writes the contents to
     the into out_path/{url_address}.
@@ -63,6 +81,7 @@ def input_file_to_folder(input_file, output_path, yara=None):
     :param input_file: String: Filename of the crawled Urls.
     :param output_path: String: Pathname of results.
     :param yara: Integer: Keyword search argument.
+    :param random_ua: Boolean: Whether to use random user-agent rotation.
     :return: None
     """
     i = 0
@@ -89,7 +108,7 @@ def input_file_to_folder(input_file, output_path, yara=None):
 
         # Extract page to file.
         try:
-            content = urllib.request.urlopen(line, timeout=10).read()
+            content = _make_request_with_ua(line, random_ua, timeout=10)
 
             if yara is not None:
                 full_match_keywords = check_yara(content, yara)
@@ -119,11 +138,12 @@ def input_file_to_folder(input_file, output_path, yara=None):
     file.close()
 
 
-def input_file_to_terminal(input_file, yara):
+def input_file_to_terminal(input_file, yara, random_ua=False):
     """ Input links from file and extract them into terminal.
 
     :param input_file: String: File name of links file.
     :param yara: Integer: Keyword search argument.
+    :param random_ua: Boolean: Whether to use random user-agent rotation.
     :return: None
     """
     try:
@@ -131,7 +151,7 @@ def input_file_to_terminal(input_file, yara):
             for line in file:
                 website = url_canon(line, 0)
                 try:
-                    content = urllib.request.urlopen(website).read()
+                    content = _make_request_with_ua(website, random_ua)
                 except (HTTPError, URLError, InvalidURL) as err:
                     print(f"## ERROR: {err}. URL: " + website)
                     continue
@@ -145,7 +165,7 @@ def input_file_to_terminal(input_file, yara):
         print(f"ERROR: {err}\n## Not valid file. File tried: " + input_file)
 
 
-def url_to_folder(website, output_file, output_path, yara):
+def url_to_folder(website, output_file, output_path, yara, random_ua=False):
     """ Scrapes the contents of the provided web address and outputs the
     contents to file.
 
@@ -153,12 +173,13 @@ def url_to_folder(website, output_file, output_path, yara):
     :param output_file: String: Filename of the results.
     :param output_path: String: Folder name of the output findings.
     :param yara: Integer: Keyword search argument.
+    :param random_ua: Boolean: Whether to use random user-agent rotation.
     :return: None
     """
     # Extract page to file
     try:
         output_file = output_path + "/" + output_file
-        content = urllib.request.urlopen(website).read()
+        content = _make_request_with_ua(website, random_ua)
 
         if yara is not None:
             full_match_keywords = check_yara(raw=content, yara=yara)
@@ -175,15 +196,16 @@ def url_to_folder(website, output_file, output_path, yara):
         print(f"Error: {err}\n Can't write on file: {output_file}")
 
 
-def url_to_terminal(website, yara):
+def url_to_terminal(website, yara, random_ua=False):
     """ Scrapes provided web address and prints the results to the terminal.
 
     :param website: String: URL of website to scrape.
     :param yara: Integer: Keyword search argument.
+    :param random_ua: Boolean: Whether to use random user-agent rotation.
     :return: None
     """
     try:
-        content = urllib.request.urlopen(website).read()
+        content = _make_request_with_ua(website, random_ua)
         if yara is not None:
             full_match_keywords = check_yara(content, yara)
 
@@ -198,7 +220,7 @@ def url_to_terminal(website, yara):
         return
 
 
-def extractor(website, crawl, output_file, input_file, output_path, selection_yara):
+def extractor(website, crawl, output_file, input_file, output_path, selection_yara, random_ua=False):
     """ Extractor - scrapes the resulting website or discovered links.
 
     :param website: String: URL of website to scrape.
@@ -208,18 +230,19 @@ def extractor(website, crawl, output_file, input_file, output_path, selection_ya
     :param input_file: String: Filename of crawled/discovered URLs
     :param output_path: String: Dir path for output files.
     :param selection_yara: String: Selected option of HTML or Text.
+    :param random_ua: Boolean: Whether to use random user-agent rotation.
     :return: None
     """
     if len(input_file) > 0:
         if crawl:
-            input_file_to_folder(input_file, output_path, selection_yara)
+            input_file_to_folder(input_file, output_path, selection_yara, random_ua)
         # TODO: Extract from list into a folder
         # elif len(output_file) > 0:
         # 	input_list_to_folder(website, input_ile, output_file)
         else:
-            input_file_to_terminal(input_file, selection_yara)
+            input_file_to_terminal(input_file, selection_yara, random_ua)
     else:
         if len(output_file) > 0:
-            url_to_folder(website, output_file, output_path, selection_yara)
+            url_to_folder(website, output_file, output_path, selection_yara, random_ua)
         else:
-            url_to_terminal(website, selection_yara)
+            url_to_terminal(website, selection_yara, random_ua)

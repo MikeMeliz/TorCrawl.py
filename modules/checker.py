@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import random
 import re
 import subprocess
 import sys
@@ -99,3 +100,27 @@ def check_ip():
         error = sys.exc_info()[0]
         print(f"Error: {error} \n## IP cannot be obtained. \n## Is {api_address} up? "
               f"\n## HTTPError: {err}")
+
+
+_user_agents_cache = None
+
+
+def get_random_user_agent():
+    """ Loads user-agents from res/user_agents.txt and returns a random one.
+    
+    :return: String - Random user-agent string
+    """
+    global _user_agents_cache
+    
+    if _user_agents_cache is None:
+        user_agents_file = os.path.join('res', 'user_agents.txt')
+        try:
+            with open(user_agents_file, 'r', encoding='UTF-8') as f:
+                _user_agents_cache = [line.strip() for line in f if line.strip()]
+        except IOError:
+            print(f"## Warning: Could not load user-agents from {user_agents_file}")
+            return None
+    
+    if _user_agents_cache:
+        return random.choice(_user_agents_cache)
+    return None

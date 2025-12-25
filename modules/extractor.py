@@ -13,6 +13,8 @@ from pathlib import Path
 
 from modules.checker import url_canon
 from modules.checker import get_random_user_agent
+from modules.checker import get_random_proxy
+from modules.checker import setup_proxy_connection
 
 
 def text(response=None):
@@ -29,14 +31,22 @@ def text(response=None):
     return ' '.join(soup.stripped_strings)
 
 
-def _make_request_with_ua(url, random_ua=False, timeout=10):
-    """ Makes an HTTP request with optional random user-agent.
+def _make_request_with_ua(url, random_ua=False, random_proxy=False, timeout=10):
+    """ Makes an HTTP request with optional random user-agent and proxy.
     
     :param url: String - URL to request
     :param random_ua: Boolean - Whether to use random user-agent
+    :param random_proxy: Boolean - Whether to use random proxy
     :param timeout: Integer - Request timeout in seconds
     :return: bytes - Response content
     """
+    # Set up proxy if random proxy is enabled
+    if random_proxy:
+        proxy = get_random_proxy()
+        if proxy:
+            setup_proxy_connection(proxy)
+    
+    # Set up user-agent if random UA is enabled
     if random_ua:
         user_agent = get_random_user_agent()
         if user_agent:
@@ -73,7 +83,7 @@ def check_yara(raw=None, yara=0):
         return matches
 
 
-def input_file_to_folder(input_file, output_path, yara=None, random_ua=False):
+def input_file_to_folder(input_file, output_path, yara=None, random_ua=False, random_proxy=False):
     """ Ingests the crawled links from the input_file,
     scrapes the contents of the resulting web pages and writes the contents to
     the into out_path/{url_address}.
@@ -82,6 +92,7 @@ def input_file_to_folder(input_file, output_path, yara=None, random_ua=False):
     :param output_path: String: Pathname of results.
     :param yara: Integer: Keyword search argument.
     :param random_ua: Boolean: Whether to use random user-agent rotation.
+    :param random_proxy: Boolean: Whether to use random proxy rotation.
     :return: None
     """
     i = 0
@@ -108,7 +119,7 @@ def input_file_to_folder(input_file, output_path, yara=None, random_ua=False):
 
         # Extract page to file.
         try:
-            content = _make_request_with_ua(line, random_ua, timeout=10)
+            content = _make_request_with_ua(line, random_ua, random_proxy, timeout=10)
 
             if yara is not None:
                 full_match_keywords = check_yara(content, yara)
@@ -138,12 +149,13 @@ def input_file_to_folder(input_file, output_path, yara=None, random_ua=False):
     file.close()
 
 
-def input_file_to_terminal(input_file, yara, random_ua=False):
+def input_file_to_terminal(input_file, yara, random_ua=False, random_proxy=False):
     """ Input links from file and extract them into terminal.
 
     :param input_file: String: File name of links file.
     :param yara: Integer: Keyword search argument.
     :param random_ua: Boolean: Whether to use random user-agent rotation.
+    :param random_proxy: Boolean: Whether to use random proxy rotation.
     :return: None
     """
     try:
@@ -151,7 +163,7 @@ def input_file_to_terminal(input_file, yara, random_ua=False):
             for line in file:
                 website = url_canon(line, 0)
                 try:
-                    content = _make_request_with_ua(website, random_ua)
+                    content = _make_request_with_ua(website, random_ua, random_proxy)
                 except (HTTPError, URLError, InvalidURL) as err:
                     print(f"## ERROR: {err}. URL: " + website)
                     continue
@@ -165,7 +177,7 @@ def input_file_to_terminal(input_file, yara, random_ua=False):
         print(f"ERROR: {err}\n## Not valid file. File tried: " + input_file)
 
 
-def url_to_folder(website, output_file, output_path, yara, random_ua=False):
+def url_to_folder(website, output_file, output_path, yara, random_ua=False, random_proxy=False):
     """ Scrapes the contents of the provided web address and outputs the
     contents to file.
 
@@ -174,12 +186,13 @@ def url_to_folder(website, output_file, output_path, yara, random_ua=False):
     :param output_path: String: Folder name of the output findings.
     :param yara: Integer: Keyword search argument.
     :param random_ua: Boolean: Whether to use random user-agent rotation.
+    :param random_proxy: Boolean: Whether to use random proxy rotation.
     :return: None
     """
     # Extract page to file
     try:
         output_file = output_path + "/" + output_file
-        content = _make_request_with_ua(website, random_ua)
+        content = _make_request_with_ua(website, random_ua, random_proxy)
 
         if yara is not None:
             full_match_keywords = check_yara(raw=content, yara=yara)
@@ -196,16 +209,17 @@ def url_to_folder(website, output_file, output_path, yara, random_ua=False):
         print(f"Error: {err}\n Can't write on file: {output_file}")
 
 
-def url_to_terminal(website, yara, random_ua=False):
+def url_to_terminal(website, yara, random_ua=False, random_proxy=False):
     """ Scrapes provided web address and prints the results to the terminal.
 
     :param website: String: URL of website to scrape.
     :param yara: Integer: Keyword search argument.
     :param random_ua: Boolean: Whether to use random user-agent rotation.
+    :param random_proxy: Boolean: Whether to use random proxy rotation.
     :return: None
     """
     try:
-        content = _make_request_with_ua(website, random_ua)
+        content = _make_request_with_ua(website, random_ua, random_proxy)
         if yara is not None:
             full_match_keywords = check_yara(content, yara)
 
@@ -220,7 +234,7 @@ def url_to_terminal(website, yara, random_ua=False):
         return
 
 
-def extractor(website, crawl, output_file, input_file, output_path, selection_yara, random_ua=False):
+def extractor(website, crawl, output_file, input_file, output_path, selection_yara, random_ua=False, random_proxy=False):
     """ Extractor - scrapes the resulting website or discovered links.
 
     :param website: String: URL of website to scrape.
@@ -231,18 +245,19 @@ def extractor(website, crawl, output_file, input_file, output_path, selection_ya
     :param output_path: String: Dir path for output files.
     :param selection_yara: String: Selected option of HTML or Text.
     :param random_ua: Boolean: Whether to use random user-agent rotation.
+    :param random_proxy: Boolean: Whether to use random proxy rotation.
     :return: None
     """
     if len(input_file) > 0:
         if crawl:
-            input_file_to_folder(input_file, output_path, selection_yara, random_ua)
+            input_file_to_folder(input_file, output_path, selection_yara, random_ua, random_proxy)
         # TODO: Extract from list into a folder
         # elif len(output_file) > 0:
         # 	input_list_to_folder(website, input_ile, output_file)
         else:
-            input_file_to_terminal(input_file, selection_yara, random_ua)
+            input_file_to_terminal(input_file, selection_yara, random_ua, random_proxy)
     else:
         if len(output_file) > 0:
-            url_to_folder(website, output_file, output_path, selection_yara, random_ua)
+            url_to_folder(website, output_file, output_path, selection_yara, random_ua, random_proxy)
         else:
-            url_to_terminal(website, selection_yara, random_ua)
+            url_to_terminal(website, selection_yara, random_ua, random_proxy)

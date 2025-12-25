@@ -3,6 +3,7 @@
 import os
 import random
 import re
+import socket
 import subprocess
 import sys
 from json import load
@@ -103,6 +104,7 @@ def check_ip():
 
 
 _user_agents_cache = None
+_proxies_cache = None
 
 
 def get_random_user_agent():
@@ -124,3 +126,69 @@ def get_random_user_agent():
     if _user_agents_cache:
         return random.choice(_user_agents_cache)
     return None
+
+
+def get_random_proxy():
+    """ Loads proxies from res/proxies.txt and returns a random one.
+    If no proxies are found, displays a helpful message with instructions.
+    
+    :return: String - Random proxy string (format: host:port) or None if no proxies available
+    """
+    global _proxies_cache
+    
+    if _proxies_cache is None:
+        proxies_file = os.path.join('res', 'proxies.txt')
+        try:
+            with open(proxies_file, 'r', encoding='UTF-8') as f:
+                _proxies_cache = [line.strip() for line in f if line.strip()]
+        except IOError:
+            print(f"## Warning: Could not load proxies from {proxies_file}")
+            return None
+        
+        # If no proxies found, show helpful message
+        if not _proxies_cache:
+            print("## No proxies found in res/proxies.txt")
+            print("## Please add proxies to res/proxies.txt, one per line.")
+            print("## Example format:")
+            print("##   127.0.0.1:9050")
+            print("##   192.168.1.1:8080")
+            print("##   proxy.example.com:3128")
+            return None
+    
+    if _proxies_cache:
+        return random.choice(_proxies_cache)
+    return None
+
+
+def setup_proxy_connection(proxy_string):
+    """ Sets up a SOCKS5 proxy connection for a request.
+    
+    :param proxy_string: String - Proxy in format "host:port"
+    :return: None
+    """
+    try:
+        import socks  # noqa - pysocks
+    except ImportError:
+        print("## Error: pysocks module is required for proxy rotation. Install it with: pip install pysocks")
+        return
+    
+    try:
+        if ':' not in proxy_string:
+            print(f"## Warning: Invalid proxy format: {proxy_string}. Expected host:port")
+            return
+        
+        proxy_host, proxy_port = proxy_string.split(':', 1)
+        proxy_port = int(proxy_port)
+        
+        # Set socks proxy and wrap the urllib module
+        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy_host, proxy_port)
+        socket.socket = socks.socksocket
+        
+        # Perform DNS resolution through the socket
+        def getaddrinfo(*args):  # noqa
+            return [(socket.AF_INET, socket.SOCK_STREAM, 6, '',
+                     (args[0], args[1]))]
+        
+        socket.getaddrinfo = getaddrinfo  # noqa
+    except (ValueError, socks.HTTPError) as err:
+        print(f"## Warning: Could not set up proxy {proxy_string}: {err}")

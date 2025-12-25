@@ -10,10 +10,12 @@ from urllib.error import HTTPError, URLError
 
 from bs4 import BeautifulSoup
 from modules.checker import get_random_user_agent
+from modules.checker import get_random_proxy
+from modules.checker import setup_proxy_connection
 
 
 class Crawler:
-    def __init__(self, website, c_depth, c_pause, out_path, logs, verbose, random_ua=False):
+    def __init__(self, website, c_depth, c_pause, out_path, logs, verbose, random_ua=False, random_proxy=False):
         self.website = website
         self.c_depth = c_depth
         self.c_pause = c_pause
@@ -21,6 +23,7 @@ class Crawler:
         self.logs = logs
         self.verbose = verbose
         self.random_ua = random_ua
+        self.random_proxy = random_proxy
 
     def excludes(self, link):
         """ Excludes links that are not required.
@@ -101,11 +104,18 @@ class Crawler:
                 log_file.close()
 
     def _make_request(self, url):
-        """ Makes an HTTP request with optional random user-agent.
+        """ Makes an HTTP request with optional random user-agent and proxy.
         
         :param url: String - URL to request
         :return: HTTPResponse object
         """
+        # Set up proxy if random proxy is enabled
+        if self.random_proxy:
+            proxy = get_random_proxy()
+            if proxy:
+                setup_proxy_connection(proxy)
+        
+        # Set up user-agent if random UA is enabled
         if self.random_ua:
             user_agent = get_random_user_agent()
             if user_agent:

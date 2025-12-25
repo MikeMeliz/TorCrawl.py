@@ -4,6 +4,8 @@ import unittest
 from modules.checker import extract_domain
 from modules.checker import folder
 from modules.checker import url_canon
+from modules.checker import get_random_user_agent
+from modules.checker import get_random_proxy
 
 
 class TestCheckFunctions(unittest.TestCase):
@@ -14,8 +16,10 @@ class TestCheckFunctions(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """ Test Suite Teardown. """
-        # Remove test folder.
-        os.rmdir('output/torcrawl')
+        # Remove test folder if it exists.
+        test_folder = 'output/torcrawl'
+        if os.path.exists(test_folder):
+            os.rmdir(test_folder)
 
     def test_url_canon_001(self):
         """ url_canon unit test.
@@ -85,5 +89,149 @@ class TestCheckFunctions(unittest.TestCase):
         result = folder(_input, False)
         self.assertTrue(os.path.exists(result),
                         f'Test Fail:: could not find folder {_input}')
+
+    def test_get_random_user_agent_001(self):
+        """ get_random_user_agent test.
+        Returns true if the function returns a valid user-agent string.
+        """
+        result = get_random_user_agent()
+        self.assertIsNotNone(result,
+                            'Test Fail:: get_random_user_agent returned None')
+        self.assertIsInstance(result, str,
+                             f'Test Fail:: expected str, got {type(result)}')
+        self.assertGreater(len(result), 0,
+                          'Test Fail:: user-agent string is empty')
+
+    def test_get_random_user_agent_002(self):
+        """ get_random_user_agent test.
+        Returns true if the returned user-agent contains expected browser identifiers.
+        """
+        result = get_random_user_agent()
+        self.assertIsNotNone(result,
+                            'Test Fail:: get_random_user_agent returned None')
+        # Check that it contains common browser identifiers
+        has_browser = any(browser in result for browser in 
+                         ['Mozilla', 'Chrome', 'Safari', 'Firefox', 'Edg', 'OPR'])
+        self.assertTrue(has_browser,
+                       f'Test Fail:: user-agent does not contain browser identifier: {result}')
+
+    def test_get_random_user_agent_003(self):
+        """ get_random_user_agent test.
+        Returns true if the function returns different user-agents (randomness test).
+        Note: This test may occasionally fail due to randomness, but probability is very low.
+        """
+        results = []
+        # Get 10 random user-agents
+        for _ in range(10):
+            ua = get_random_user_agent()
+            self.assertIsNotNone(ua, 'Test Fail:: get_random_user_agent returned None')
+            results.append(ua)
+        
+        # Check that at least some are different (with 50+ user-agents, very likely)
+        unique_results = set(results)
+        self.assertGreater(len(unique_results), 1,
+                          f'Test Fail:: all user-agents were identical: {results}')
+
+    def test_get_random_user_agent_004(self):
+        """ get_random_user_agent test.
+        Returns true if the user-agent follows expected format (starts with Mozilla).
+        """
+        result = get_random_user_agent()
+        self.assertIsNotNone(result,
+                            'Test Fail:: get_random_user_agent returned None')
+        self.assertTrue(result.startswith('Mozilla/'),
+                       f'Test Fail:: user-agent does not start with Mozilla/: {result}')
+
+    def test_get_random_proxy_001(self):
+        """ get_random_proxy test.
+        Returns true if the function handles empty proxy file gracefully.
+        Note: This test expects proxies.txt to be empty initially.
+        """
+        # When proxies.txt is empty, function should return None
+        # and display helpful message (we can't easily test the message output)
+        result = get_random_proxy()
+        # Since proxies.txt is empty, result should be None
+        # This is expected behavior when no proxies are configured
+        self.assertIsNone(result,
+                         'Test Fail:: get_random_proxy should return None when no proxies available')
+
+    def test_get_random_proxy_002(self):
+        """ get_random_proxy test.
+        Returns true if the function can load and return proxies from file.
+        This test requires proxies.txt to have at least one proxy entry.
+        """
+        import os
+        proxies_file = os.path.join('res', 'proxies.txt')
+        
+        # Check if file exists and has content
+        if os.path.exists(proxies_file):
+            with open(proxies_file, 'r', encoding='UTF-8') as f:
+                has_proxies = bool([line.strip() for line in f if line.strip()])
+            
+            if has_proxies:
+                result = get_random_proxy()
+                self.assertIsNotNone(result,
+                                    'Test Fail:: get_random_proxy returned None when proxies exist')
+                self.assertIsInstance(result, str,
+                                     f'Test Fail:: expected str, got {type(result)}')
+                self.assertGreater(len(result), 0,
+                                  'Test Fail:: proxy string is empty')
+                # Check format: should contain colon (host:port)
+                self.assertIn(':', result,
+                             f'Test Fail:: proxy should be in format host:port, got {result}')
+
+    def test_get_random_proxy_003(self):
+        """ get_random_proxy test.
+        Returns true if the function returns different proxies (randomness test).
+        Note: This test requires proxies.txt to have multiple proxy entries.
+        """
+        import os
+        proxies_file = os.path.join('res', 'proxies.txt')
+        
+        if os.path.exists(proxies_file):
+            with open(proxies_file, 'r', encoding='UTF-8') as f:
+                proxy_count = len([line.strip() for line in f if line.strip()])
+            
+            if proxy_count > 1:
+                results = []
+                # Get 10 random proxies
+                for _ in range(10):
+                    proxy = get_random_proxy()
+                    if proxy:
+                        results.append(proxy)
+                
+                if len(results) > 1:
+                    # Check that at least some are different
+                    unique_results = set(results)
+                    self.assertGreater(len(unique_results), 1,
+                                      f'Test Fail:: all proxies were identical: {results}')
+
+    def test_get_random_proxy_004(self):
+        """ get_random_proxy test.
+        Returns true if the proxy follows expected format (host:port).
+        """
+        import os
+        proxies_file = os.path.join('res', 'proxies.txt')
+        
+        if os.path.exists(proxies_file):
+            with open(proxies_file, 'r', encoding='UTF-8') as f:
+                has_proxies = bool([line.strip() for line in f if line.strip()])
+            
+            if has_proxies:
+                result = get_random_proxy()
+                if result:
+                    # Should be in format host:port
+                    parts = result.split(':')
+                    self.assertEqual(len(parts), 2,
+                                    f'Test Fail:: proxy should be in format host:port, got {result}')
+                    # Port should be numeric
+                    try:
+                        port = int(parts[1])
+                        self.assertGreater(port, 0,
+                                          f'Test Fail:: port should be positive, got {port}')
+                        self.assertLessEqual(port, 65535,
+                                            f'Test Fail:: port should be <= 65535, got {port}')
+                    except ValueError:
+                        self.fail(f'Test Fail:: port should be numeric, got {parts[1]}')
 
     # TODO: Implement check_tor and check_ip tests.

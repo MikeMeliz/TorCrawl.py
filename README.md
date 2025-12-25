@@ -80,6 +80,8 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
 | -v           | --verbose           | Show more information about the progress                                               |
 | -u           | --url *.onion       | URL of Webpage to crawl or extract                                                     |
 | -w           | --without           | Without using TOR Network                                                              |
+| -rua         | --random-ua         | Enable random user-agent rotation for requests (works with both TOR and clearnet)     |
+| -rpr         | --random-proxy       | Enable random proxy rotation from res/proxies.txt (requires -w flag, one proxy per line, format: host:port) |
 | -px          | --proxy             | IP address for SOCKS5 proxy (Default: 127.0.0.1 for using TOR)                         |
 | -pr          | --proxyport         | Port for SOCKS5 proxy (Default: 9050)                                                  |
 | -f           | --folder            | The directory which will contain the generated files                                   |
@@ -218,6 +220,10 @@ Feel free to contribute on this project! Just fork it, make any change on your f
 
 ## Changelog
 ```shell
+v1.33:
+    * Added User-Agent rotation
+    * Implemented Proxy rotation
+    * Introduced dependabot
 v1.32:
     * Removed 1 second default pause between requests
     * Several improvements on results

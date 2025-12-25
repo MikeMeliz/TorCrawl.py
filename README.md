@@ -222,7 +222,7 @@ Feel free to contribute on this project! Just fork it, make any change on your f
 ```shell
 v1.33:
     * Added User-Agent rotation
-    *
+    * Implemented Proxy rotation
     * Introduced dependabot
 v1.32:
     * Removed 1 second default pause between requests

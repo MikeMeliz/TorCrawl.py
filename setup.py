@@ -30,7 +30,7 @@ setup(
         'lxml',
     ],
     package_data={
-        '': ['res/keywords.yar', 'res/proxies.txt', 'res/user_agents.txt'],
+        'res': ['keywords.yar', 'proxies.txt', 'user_agents.txt'],
     },
     include_package_data=True,
     entry_points={

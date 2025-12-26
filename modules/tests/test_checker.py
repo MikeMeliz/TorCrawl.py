@@ -1,11 +1,18 @@
+import io
 import os.path
+import socket
 import unittest
+from unittest import mock
 
+from modules import checker
 from modules.checker import extract_domain
 from modules.checker import folder
 from modules.checker import url_canon
 from modules.checker import get_random_user_agent
 from modules.checker import get_random_proxy
+from modules.checker import check_tor
+from modules.checker import check_ip
+from modules.checker import setup_proxy_connection
 
 
 class TestCheckFunctions(unittest.TestCase):
@@ -233,5 +240,37 @@ class TestCheckFunctions(unittest.TestCase):
                                             f'Test Fail:: port should be <= 65535, got {port}')
                     except ValueError:
                         self.fail(f'Test Fail:: port should be numeric, got {parts[1]}')
+    
+    def test_check_tor_reports_running(self):
+        with mock.patch("subprocess.check_output", return_value=b"tor\n"):
+            # Should not raise when tor string present
+            check_tor(verbose=True)
 
-    # TODO: Implement check_tor and check_ip tests.
+    def test_check_tor_exits_when_missing(self):
+        with mock.patch("subprocess.check_output", return_value=b""), \
+             mock.patch("sys.exit", side_effect=SystemExit) as exit_mock:
+            with self.assertRaises(SystemExit):
+                check_tor(verbose=False)
+            exit_mock.assert_called_once_with(2)
+
+    def test_check_ip_prints_ip(self):
+        fake_response = io.StringIO('{"ip": "1.2.3.4"}')
+        with mock.patch("modules.checker.urlopen", return_value=fake_response), \
+             mock.patch("modules.checker.load", return_value={"ip": "1.2.3.4"}):
+            check_ip()
+
+    def test_setup_proxy_connection_invalid_format(self):
+        # Should not throw on malformed string
+        with mock.patch.dict("sys.modules", {"socks": mock.Mock()}), \
+             mock.patch("modules.checker.socket") as socket_mock:
+            setup_proxy_connection("badformat")
+            socket_mock.socket.assert_not_called()
+
+    def test_setup_proxy_connection_configures_socket(self):
+        fake_socks = mock.Mock()
+        fake_socks.socksocket = mock.Mock()
+        fake_socks.PROXY_TYPE_SOCKS5 = object()
+        with mock.patch.dict("sys.modules", {"socks": fake_socks}), \
+             mock.patch("modules.checker.socket", socket):
+            setup_proxy_connection("host:9050")
+        fake_socks.setdefaultproxy.assert_called_once()

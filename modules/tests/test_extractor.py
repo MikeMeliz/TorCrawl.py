@@ -1,7 +1,11 @@
-import os.path
+import contextlib
+import io
+import os
+import tempfile
 import unittest
 from unittest import mock
 
+import modules.extractor as extractor_mod
 from modules.extractor import (
     text,
     check_yara,
@@ -9,134 +13,120 @@ from modules.extractor import (
     input_file_to_terminal,
     url_to_folder,
     url_to_terminal,
-    extractor
+    extractor,
 )
 
 
 class TestExtractorFunctions(unittest.TestCase):
-    @classmethod
-    def setUp(cls) -> None:
-        """ Test Suite Setup. """
-        # Setup activities before each test.
+    def test_text_strips_scripts_and_styles(self):
+        html = "<html><head><style>.x{}</style></head><body>Hello<script>ignored()</script><p>World</p></body></html>"
+        self.assertEqual("Hello World", text(html))
 
-    @classmethod
-    def tearDownClass(cls):
-        """ Test Suite Teardown. """
-        # Remove test files or folders created during tests.
-        if os.path.exists('output/torcrawl'):
-            os.rmdir('output/torcrawl')
+    def test_check_yara_returns_matches_and_uses_text_mode(self):
+        fake_yara = mock.Mock()
+        rules_mock = mock.Mock()
+        rules_mock.match.return_value = ["hit"]
+        fake_yara.compile.return_value = rules_mock
 
-    @mock.patch('requests.get')
-    def test_text(self, mock_get):
-        """ text unit test.
-        Returns true if the function processes a text input correctly.
-        """
-        self.assertEqual(len(mock_get.call_args_list), 3)
-        self.assertIn(mock.call('http://someurl.com/test.json'), mock_get.call_args_list)
+        with mock.patch.dict("sys.modules", {"yara": fake_yara}):
+            result = check_yara("<html><body>Keyword</body></html>", yara=1)
 
-        input_data = "test input"
-        expected = "expected output"
-        result = text(input_data)
-        self.assertEqual(expected, result,
-                         f'Test Fail:: expected = {expected}, got {result}')
+        self.assertEqual(["hit"], result)
+        fake_yara.compile.assert_called_once()
+        rules_mock.match.assert_called_once()
 
-    def test_check_yara(self):
-        """ check_yara unit test.
-        Returns true if YARA rules are validated correctly.
-        """
-        valid_yara_rule = "rule ExampleRule { condition: true }"
-        invalid_yara_rule = "invalid rule format"
+    def test_check_yara_returns_none_when_raw_missing(self):
+        with mock.patch.dict("sys.modules", {"yara": mock.Mock()}):
+            self.assertIsNone(check_yara(None, yara=0))
 
-        # Test valid rule
-        expected = "expected output for valid rule"
-        result = check_yara(valid_yara_rule)
-        self.assertEqual(expected, result,
-                         f'Test Fail:: expected = {expected}, got {result}')
+    def test_input_file_to_folder_writes_files_and_handles_duplicates(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_path = os.path.join(temp_dir, "urls.txt")
+            urls = [
+                "http://example.com/index.htm\n",
+                "http://example.com/index.htm\n",
+            ]
+            with open(input_path, "w", encoding="utf-8") as f:
+                f.writelines(urls)
 
-        # Test invalid rule
-        with self.assertRaises(Exception):
-            check_yara(invalid_yara_rule)
+            with mock.patch.object(
+                extractor_mod, "_make_request_with_ua", return_value=b"content"
+            ):
+                input_file_to_folder(input_path, temp_dir, yara=None)
 
-    def test_input_file_to_folder(self):
-        """ input_file_to_folder unit test.
-        Returns true if files are moved to folders correctly.
-        """
-        file_path = "path/to/valid_file"
-        folder_path = "path/to/valid_folder"
+            created = sorted(os.listdir(temp_dir))
+            self.assertIn("index.htm", created)
+            self.assertIn("index.htm(1)", created)
+            for filename in ("index.htm", "index.htm(1)"):
+                with open(os.path.join(temp_dir, filename), "rb") as f:
+                    self.assertEqual(b"content", f.read())
 
-        result = input_file_to_folder(file_path, folder_path)
-        expected = "expected output"
-        self.assertEqual(expected, result,
-                         f'Test Fail:: expected = {expected}, got {result}')
+    def test_input_file_to_terminal_prints_content_and_no_matches(self):
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp_file:
+            temp_file.write("example.com\n")
+            temp_file_path = temp_file.name
+        self.addCleanup(lambda: os.remove(temp_file_path))
 
-        # Test with invalid file path
-        invalid_file_path = "path/to/nonexistent_file"
-        with self.assertRaises(FileNotFoundError):
-            input_file_to_folder(invalid_file_path, folder_path)
+        with mock.patch.object(
+            extractor_mod, "_make_request_with_ua", return_value=b"body"
+        ), mock.patch.object(extractor_mod, "check_yara", return_value=[]):
+            buffer = io.StringIO()
+            with contextlib.redirect_stdout(buffer):
+                input_file_to_terminal(temp_file_path, yara=1, random_ua=False, random_proxy=False)
 
-    def test_input_file_to_terminal(self):
-        """ input_file_to_terminal unit test.
-        Verifies if file content is printed to the terminal successfully.
-        """
-        file_path = "path/to/valid_file"
+        output = buffer.getvalue()
+        self.assertIn("No matches in:", output)
 
-        result = input_file_to_terminal(file_path)
-        expected = "expected terminal output"
-        self.assertEqual(expected, result,
-                         f'Test Fail:: expected = {expected}, got {result}')
+    def test_url_to_folder_writes_file(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with mock.patch.object(
+                extractor_mod, "_make_request_with_ua", return_value=b"data"
+            ), mock.patch.object(extractor_mod, "check_yara", return_value=[]):
+                url_to_folder("http://example.com", "out.html", temp_dir, yara=1)
 
-        # Test with invalid file path
-        invalid_file_path = "path/to/nonexistent_file"
-        with self.assertRaises(FileNotFoundError):
-            input_file_to_terminal(invalid_file_path)
+            target = os.path.join(temp_dir, "out.html")
+            self.assertTrue(os.path.exists(target))
+            with open(target, "rb") as f:
+                self.assertEqual(b"data", f.read())
 
-    @mock.patch('requests.get')
-    def test_url_to_folder(self, mock_get):
-        """ url_to_folder unit test.
-        Ensures content is downloaded from URL to folder correctly.
-        """
-        url = "http://valid.url"
-        folder_path = "path/to/valid_folder"
+    def test_url_to_terminal_prints_content(self):
+        with mock.patch.object(
+            extractor_mod, "_make_request_with_ua", return_value=b"payload"
+        ), mock.patch.object(extractor_mod, "check_yara", return_value=["match"]):
+            buffer = io.StringIO()
+            with contextlib.redirect_stdout(buffer):
+                url_to_terminal("http://example.com", yara=1)
 
-        result = url_to_folder(url, folder_path)
-        expected = "expected output"
-        self.assertEqual(expected, result,
-                         f'Test Fail:: expected = {expected}, got {result}')
+        self.assertIn("payload", buffer.getvalue())
 
-        # Test with invalid URL
-        mock_get.side_effect = Exception("Invalid URL")
-        with self.assertRaises(Exception):
-            url_to_folder("invalid_url", folder_path)
+    def test_extractor_routes_to_input_file_to_folder(self):
+        with mock.patch.object(extractor_mod, "input_file_to_folder") as to_folder, \
+             mock.patch.object(extractor_mod, "input_file_to_terminal") as to_terminal, \
+             mock.patch.object(extractor_mod, "url_to_folder") as url_to_fold, \
+             mock.patch.object(extractor_mod, "url_to_terminal") as url_to_term:
 
-    @mock.patch('requests.get')
-    def test_url_to_terminal(self, mock_get):
-        """ url_to_terminal unit test.
-        Ensures content is displayed from URL to terminal correctly.
-        """
-        url = "http://valid.url"
+            extractor(
+                website="http://example.com",
+                crawl=True,
+                output_file="",
+                input_file="input.txt",
+                output_path="out",
+                selection_yara=1,
+            )
 
-        result = url_to_terminal(url)
-        expected = "expected terminal output"
-        self.assertEqual(expected, result,
-                         f'Test Fail:: expected = {expected}, got {result}')
+            to_folder.assert_called_once()
+            to_terminal.assert_not_called()
+            url_to_fold.assert_not_called()
+            url_to_term.assert_not_called()
 
-        # Test with invalid URL
-        mock_get.side_effect = Exception("Invalid URL")
-        with self.assertRaises(Exception):
-            url_to_terminal("invalid_url")
-
-    def test_extractor(self):
-        """ extractor unit test.
-        Ensures extractor function behaves as expected with valid inputs.
-        """
-        input_data = "valid input"
-
-        result = extractor(input_data)
-        expected = "expected output"
-        self.assertEqual(expected, result,
-                         f'Test Fail:: expected = {expected}, got {result}')
-
-        # Test with invalid input
-        invalid_input = "invalid input"
-        with self.assertRaises(Exception):
-            extractor(invalid_input)
+    def test_extractor_routes_to_url_to_terminal_when_no_files(self):
+        with mock.patch.object(extractor_mod, "url_to_terminal") as url_to_term:
+            extractor(
+                website="http://example.com",
+                crawl=False,
+                output_file="",
+                input_file="",
+                output_path="out",
+                selection_yara=1,
+            )
+            url_to_term.assert_called_once()

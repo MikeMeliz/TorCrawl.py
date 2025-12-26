@@ -170,7 +170,7 @@ class Crawler:
                     continue
 
                 # For each <a href=""> tag.
-                for link in soup.findAll('a'):
+                for link in soup.find_all('a'):
                     link = link.get('href')
 
                     if self.excludes(link):
@@ -181,7 +181,7 @@ class Crawler:
                         lst.add(ver_link)
 
                 # For each <area> tag.
-                for link in soup.findAll('area'):
+                for link in soup.find_all('area'):
                     link = link.get('href')
 
                     if self.excludes(link):

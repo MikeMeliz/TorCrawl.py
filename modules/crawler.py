@@ -9,16 +9,21 @@ import urllib.request
 from urllib.error import HTTPError, URLError
 
 from bs4 import BeautifulSoup
+from modules.checker import get_random_user_agent
+from modules.checker import get_random_proxy
+from modules.checker import setup_proxy_connection
 
 
 class Crawler:
-    def __init__(self, website, c_depth, c_pause, out_path, logs, verbose):
+    def __init__(self, website, c_depth, c_pause, out_path, logs, verbose, random_ua=False, random_proxy=False):
         self.website = website
         self.c_depth = c_depth
         self.c_pause = c_pause
         self.out_path = out_path
         self.logs = logs
         self.verbose = verbose
+        self.random_ua = random_ua
+        self.random_proxy = random_proxy
 
     def excludes(self, link):
         """ Excludes links that are not required.
@@ -98,6 +103,26 @@ class Crawler:
                 log_file.write(str(now) + " [crawler.py] " + log)
                 log_file.close()
 
+    def _make_request(self, url):
+        """ Makes an HTTP request with optional random user-agent and proxy.
+        
+        :param url: String - URL to request
+        :return: HTTPResponse object
+        """
+        # Set up proxy if random proxy is enabled
+        if self.random_proxy:
+            proxy = get_random_proxy()
+            if proxy:
+                setup_proxy_connection(proxy)
+        
+        # Set up user-agent if random UA is enabled
+        if self.random_ua:
+            user_agent = get_random_user_agent()
+            if user_agent:
+                req = urllib.request.Request(url, headers={'User-Agent': user_agent})
+                return urllib.request.urlopen(req)
+        return urllib.request.urlopen(url)
+
 
     def crawl(self):
         """ Core of the crawler.
@@ -122,14 +147,14 @@ class Crawler:
                 if ord_lst_ind > 0:
                     try:
                         if item is not None:
-                            html_page = urllib.request.urlopen(item)
+                            html_page = self._make_request(item)
                     except (HTTPError, URLError) as error:
                         self.write_log(f"[INFO] ERROR: Domain or link seems to be unreachable: {str(item)} | "
                                        f"Message: {error}\n")
                         continue
                 else:
                     try:
-                        html_page = urllib.request.urlopen(self.website)
+                        html_page = self._make_request(self.website)
                         ord_lst_ind += 1
                     except (HTTPError, URLError) as error:
                         self.write_log(f"[INFO] ERROR: Domain or link seems to be unreachable: {str(item)} | "

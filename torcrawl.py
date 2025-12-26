@@ -14,6 +14,8 @@ General:
 -v, --verbose      : Show more information about the progress
 -u, --url *.onion  : URL of Webpage to crawl or extract
 -w, --without      : Without the use of Relay TOR
+-rua, --random-ua  : Enable random user-agent rotation for requests
+-rpr, --random-proxy: Enable random proxy rotation from res/proxies.txt
 
 Extract:
 -e, --extract           : Extract page's code to terminal or file.
@@ -60,14 +62,13 @@ from modules.extractor import extractor
 
 
 # Set socket and connection with TOR network
-def connect_tor():
+def connect_tor(proxy_url, proxy_port):
     """ Connect to TOR via DNS resolution through a socket.
     :return: None or HTTPError.
     """
     try:
-        port = 9050
         # Set socks proxy and wrap the urllib module
-        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', port)
+        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy_url, proxy_port)
         socket.socket = socks.socksocket
 
         # Perform DNS resolution through the socket
@@ -166,6 +167,28 @@ def main():
         help='Check for keywords and only scrape documents that contain a '
              'match. \'h\' search whole html object. \'t\' search only the text.'
     )
+    parser.add_argument(
+        '-rua',
+        '--random-ua',
+        action='store_true',
+        help='Enable random user-agent rotation for requests'
+    )
+    parser.add_argument(
+        '-rpr',
+        '--random-proxy',
+        action='store_true',
+        help='Enable random proxy rotation from res/proxies.txt'
+    )
+    parser.add_argument(
+        '-pr',
+        '--proxyport',
+        help='Port for SOCKS5 proxy',default=9050
+    )
+    parser.add_argument(
+        '-px',
+        '--proxy',
+        help='IP address for SOCKS5 proxy',default='127.0.0.1'
+    )
 
     args = parser.parse_args()
 
@@ -189,11 +212,23 @@ def main():
     depth = args.depth if args.depth else 0
     pause = args.pause if args.pause else 0
     selection_yara = args.yara if args.yara else None
+    random_ua = args.random_ua
+    random_proxy = args.random_proxy
 
-    # Connect to TOR
-    if args.without is False:
+    # Random proxy rotation only works when TOR is disabled
+    if random_proxy and args.without is False:
+        print("## Warning: Random proxy rotation requires --without (-w) flag to disable TOR.")
+        print("## Random proxy rotation disabled. Using TOR instead.")
+        random_proxy = False
+
+    # Connect to TOR or random proxy
+    if random_proxy:
+        # Random proxy rotation enabled - will be handled per request
+        if args.verbose:
+            print("## Random proxy rotation enabled (TOR disabled)")
+    elif args.without is False:
         check_tor(args.verbose)
-        connect_tor()
+        connect_tor(args.proxy, args.proxyport)
 
     if args.verbose:
         check_ip()
@@ -201,7 +236,7 @@ def main():
 
     if args.crawl:
         crawler = Crawler(website, depth, pause, output_folder, args.log,
-                          args.verbose)
+                          args.verbose, random_ua, random_proxy)
         lst = crawler.crawl()
 
         if args.input is None:
@@ -214,10 +249,10 @@ def main():
 
         if args.extract:
             extractor(website, args.crawl, output_file, input_file, output_folder,
-                      selection_yara)
+                      selection_yara, random_ua, random_proxy)
     else:
         extractor(website, args.crawl, output_file, input_file, output_folder,
-                  selection_yara)
+                  selection_yara, random_ua, random_proxy)
 
 
 # Stub to call main method.

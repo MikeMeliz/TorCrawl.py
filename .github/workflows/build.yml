@@ -1,16 +1,17 @@
-name: Build
+name: Build & Scan
 on:
   push:
     branches:
       - master
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
 jobs:
-  sonarcloud:
-    name: SonarCloud
+  sonarqube:
+    name: SonarQube Cloud Analysis
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Setup Python
@@ -21,7 +22,7 @@ jobs:
         run: pip install tox
       - name: Run tox
         run: tox -e py
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+      - name: SonarQube Cloud Scan
+        uses: SonarSource/sonarqube-scan-action@v6.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

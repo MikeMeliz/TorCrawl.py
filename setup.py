@@ -29,9 +29,10 @@ setup(
         'yara-python',
         'lxml',
     ],
-    data_files=[
-        ('share/torcrawl/res', ['res/keywords.yar', 'res/proxies.txt', 'res/user_agents.txt']),
-    ],
+    package_data={
+        '': ['res/keywords.yar', 'res/proxies.txt', 'res/user_agents.txt'],
+    },
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'torcrawl=torcrawl:main',

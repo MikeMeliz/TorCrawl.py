@@ -50,6 +50,13 @@ def folder(website, verbose):
     :param verbose: Boolean - Logging level.
     :return: String 'output_folder' - Path of the output folder.
     """
+    # Ensure base output directory exists
+    if not os.path.exists('output'):
+        try:
+            os.makedirs('output')
+        except (OSError, PermissionError):
+            pass  # Silently fail if can't create, will error later if needed
+    
     parsed = urlparse(website)
     if parsed.scheme != '':
         output_folder = "output/" + urlparse(website).netloc

@@ -51,7 +51,10 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
 
 ## Installation
 
-### Easy Installation with pip:
+### Easy Installation:
+- from [PyPi][pypi-package]:<br>
+`pip install torcrawl`
+- with homebrew:<br>
 *Coming soon...*
 
 ### Manual Installation:
@@ -255,6 +258,7 @@ v1.2:
 [commit-link]: https://github.com/MikeMeliz/TorCrawl.py/commits/main
 [releases-link]: https://github.com/MikeMeliz/TorCrawl.py/releases
 [license-link]: https://github.com/MikeMeliz/TorCrawl.py/blob/master/LICENSE
+[pypi-package]: https://pypi.org/project/torcrawl/
 [tor-whyslow]: https://www.torproject.org/docs/faq.html.en#WhySlow
 [tor-download]: https://www.torproject.org/download/tor/
 [tor-docs]: https://www.torproject.org/docs/

@@ -96,5 +96,5 @@ class TestCrawlerFunctions(unittest.TestCase):
             with mock.patch.object(crawler, "_make_request", return_value=dummy):
                 result = crawler.crawl()
 
-            self.assertIn("https://example.com", result[0])
+            self.assertIn("https://example.com", result)
             self.assertIn("https://example.com/page1", result)

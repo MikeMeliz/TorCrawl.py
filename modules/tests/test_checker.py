@@ -270,7 +270,10 @@ class TestCheckFunctions(unittest.TestCase):
         fake_socks = mock.Mock()
         fake_socks.socksocket = mock.Mock()
         fake_socks.PROXY_TYPE_SOCKS5 = object()
+        # Patch socket attributes so any monkey-patching done by the code is
+        # cleaned up automatically at context exit.
         with mock.patch.dict("sys.modules", {"socks": fake_socks}), \
-             mock.patch("modules.checker.socket", socket):
+             mock.patch.object(socket, "socket"), \
+             mock.patch.object(socket, "getaddrinfo"):
             setup_proxy_connection("host:9050")
         fake_socks.setdefaultproxy.assert_called_once()

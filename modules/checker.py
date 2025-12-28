@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import importlib.resources as resources
 import random
 import re
 import socket
@@ -114,6 +115,15 @@ _user_agents_cache = None
 _proxies_cache = None
 
 
+def _read_resource_file(filename):
+    """Return absolute path to packaged resource, falling back to CWD."""
+    try:
+        return resources.files("res").joinpath(filename)
+    except (FileNotFoundError, ModuleNotFoundError):
+        # Fallback for non-installed executions
+        return os.path.join("res", filename)
+
+
 def get_random_user_agent():
     """ Loads user-agents from res/user_agents.txt and returns a random one.
     
@@ -122,7 +132,7 @@ def get_random_user_agent():
     global _user_agents_cache
     
     if _user_agents_cache is None:
-        user_agents_file = os.path.join('res', 'user_agents.txt')
+        user_agents_file = _read_resource_file('user_agents.txt')
         try:
             with open(user_agents_file, 'r', encoding='UTF-8') as f:
                 _user_agents_cache = [line.strip() for line in f if line.strip()]
@@ -144,7 +154,7 @@ def get_random_proxy():
     global _proxies_cache
     
     if _proxies_cache is None:
-        proxies_file = os.path.join('res', 'proxies.txt')
+        proxies_file = _read_resource_file('proxies.txt')
         try:
             with open(proxies_file, 'r', encoding='UTF-8') as f:
                 _proxies_cache = [line.strip() for line in f if line.strip()]

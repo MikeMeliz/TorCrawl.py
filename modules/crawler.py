@@ -33,7 +33,7 @@ class Crawler:
         """
         now = datetime.datetime.now().strftime("%y%m%d")
 
-        # BUG: For NoneType Exceptions, got to find a solution here
+        # BeautifulSoup returns tags without href; skip missing targets early
         if link is None:
             return True
         # Links

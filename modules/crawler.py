@@ -39,6 +39,16 @@ class Crawler:
         # Links
         elif '#' in link:
             return True
+        # Image links (log separately; also record as external when out of scope)
+        elif re.search('^.*\\.(jpg|jpeg|png|gif|webp|svg|bmp)$', link, re.IGNORECASE):
+            img_path = self.out_path + '/' + now + '_images.txt'
+            with open(img_path, 'a+', encoding='UTF-8') as lst_file:
+                lst_file.write(str(link) + '\n')
+            if link.startswith('http') and not link.startswith(self.website):
+                file_path = self.out_path + '/' + now + '_ext-links.txt'
+                with open(file_path, 'a+', encoding='UTF-8') as lst_file:
+                    lst_file.write(str(link) + '\n')
+            return True
         # External links
         elif link.startswith('http') and not link.startswith(self.website):
             file_path = self.out_path + '/' + now + '_ext-links.txt'
@@ -57,8 +67,8 @@ class Crawler:
             with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
             return True
-        # Type of files
-        elif re.search('^.*\\.(pdf|jpg|jpeg|png|gif|doc)$', link, re.IGNORECASE):
+        # Other files
+        elif re.search('^.*\\.(pdf|doc)$', link, re.IGNORECASE):
             file_path = self.out_path + '/' + now + '_files.txt'
             with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')

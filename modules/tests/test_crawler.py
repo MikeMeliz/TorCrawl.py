@@ -1,5 +1,6 @@
 import shutil
 import unittest
+import datetime
 from unittest.mock import patch
 
 from modules.crawler import Crawler
@@ -55,6 +56,17 @@ class TestCrawlerFunctions(unittest.TestCase):
         # TODO: Test Crawler.crawl against live web application.
         # Re-instantiate crawler with live application.
         pass
+
+    def test_excludes_writes_images_file(self):
+        """Image links are excluded and logged to _images.txt."""
+        now = datetime.datetime.now().strftime("%y%m%d")
+        img_link = 'https://torcrawl.com/res/test-image.png'
+        self.assertTrue(self.crawler.excludes(img_link))
+
+        img_file = f"{self.out_path}/{now}_images.txt"
+        with open(img_file, 'r', encoding='UTF-8') as f:
+            contents = f.read()
+        self.assertIn(img_link, contents)
 
     @patch.object(Crawler, "_make_request")
     def test_crawl_regex_finds_plain_urls(self, mock_request):

@@ -60,7 +60,7 @@ from modules.checker import url_canon
 from modules.crawler import Crawler
 from modules.extractor import extractor
 
-__version__ = "1.33"
+__version__ = "1.34"
 
 
 # Set socket and connection with TOR network

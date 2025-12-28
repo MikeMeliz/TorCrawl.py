@@ -88,6 +88,7 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
 | -px          | --proxy             | IP address for SOCKS5 proxy (Default: 127.0.0.1 for using TOR)                         |
 | -pr          | --proxyport         | Port for SOCKS5 proxy (Default: 9050)                                                  |
 | -f           | --folder            | The directory which will contain the generated files                                   |
+| -V           | --version           | Show version and exit                                                                  |
 | **Extract**: |                     |                                                                                        |
 | -e           | --extract           | Extract page's code to terminal or file (Default: Terminal)                            |
 | -i           | --input filename    | Input file with URL(s) (separated by line)                                             |
@@ -223,6 +224,9 @@ Feel free to contribute on this project! Just fork it, make any change on your f
 
 ## Changelog
 ```shell
+v1.34:
+    * Readiness for PyPi and Homebrew
+    * Added --version argument
 v1.33:
     * Added User-Agent rotation
     * Implemented Proxy rotation

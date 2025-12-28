@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import io
 import os
+import importlib.resources as resources
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -69,14 +70,17 @@ def check_yara(raw=None, yara=0):
         print("YARA module error: " + 
               "Try this solution: https://stackoverflow.com/a/51504326")
 
-    file_path = os.path.join('res/keywords.yar')
+    try:
+        file_path = resources.files("res").joinpath("keywords.yar")
+    except (FileNotFoundError, ModuleNotFoundError):
+        file_path = os.path.join('res/keywords.yar')
 
     if raw is not None:
         if yara == 1:
             raw = text(response=raw).lower()
 
         file = os.path.join(file_path)
-        rules = _yara.compile(file)
+        rules = _yara.compile(str(file))
         matches = rules.match(data=raw)
         if len(matches) != 0:
             print("YARA: Found a match!")

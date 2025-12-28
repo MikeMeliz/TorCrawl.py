@@ -60,6 +60,8 @@ from modules.checker import url_canon
 from modules.crawler import Crawler
 from modules.extractor import extractor
 
+__version__ = "1.34"
+
 
 # Set socket and connection with TOR network
 def connect_tor(proxy_url, proxy_port):
@@ -112,6 +114,12 @@ def main():
         '--without',
         action='store_true',
         help='Without the use of Relay TOR'
+    )
+    parser.add_argument(
+        '-V',
+        '--version',
+        action='version',
+        version=f"%(prog)s {__version__}"
     )
 
     # Extract

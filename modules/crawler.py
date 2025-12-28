@@ -227,7 +227,6 @@ class Crawler:
                     if ver_link is not None:
                         lst.add(ver_link)
 
-                # TODO: For images
                 # TODO: For scripts
 
                 # Pass new on list and re-set it to delete duplicates.

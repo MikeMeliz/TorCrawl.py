@@ -68,6 +68,17 @@ class TestCrawlerFunctions(unittest.TestCase):
             contents = f.read()
         self.assertIn(img_link, contents)
 
+    def test_excludes_writes_scripts_file(self):
+        """Script links are excluded and logged to _scripts.txt."""
+        now = datetime.datetime.now().strftime("%y%m%d")
+        script_link = 'https://torcrawl.com/static/app.js'
+        self.assertTrue(self.crawler.excludes(script_link))
+
+        scripts_file = f"{self.out_path}/{now}_scripts.txt"
+        with open(scripts_file, 'r', encoding='UTF-8') as f:
+            contents = f.read()
+        self.assertIn(script_link, contents)
+
     @patch.object(Crawler, "_make_request")
     def test_crawl_regex_finds_plain_urls(self, mock_request):
         """Ensure regex fallback finds URLs not wrapped in <a>/<area> tags."""

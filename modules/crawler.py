@@ -49,6 +49,16 @@ class Crawler:
                 with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                     lst_file.write(str(link) + '\n')
             return True
+        # Script links (log separately; also record as external when out of scope)
+        elif re.search('^.*\\.(js|mjs|ts|jsx|tsx)$', link, re.IGNORECASE):
+            script_path = self.out_path + '/' + now + '_scripts.txt'
+            with open(script_path, 'a+', encoding='UTF-8') as lst_file:
+                lst_file.write(str(link) + '\n')
+            if link.startswith('http') and not link.startswith(self.website):
+                file_path = self.out_path + '/' + now + '_ext-links.txt'
+                with open(file_path, 'a+', encoding='UTF-8') as lst_file:
+                    lst_file.write(str(link) + '\n')
+            return True
         # External links
         elif link.startswith('http') and not link.startswith(self.website):
             file_path = self.out_path + '/' + now + '_ext-links.txt'
@@ -226,8 +236,6 @@ class Crawler:
                     ver_link = self.canonical(link)
                     if ver_link is not None:
                         lst.add(ver_link)
-
-                # TODO: For scripts
 
                 # Pass new on list and re-set it to delete duplicates.
                 ord_lst = ord_lst + list(set(lst))

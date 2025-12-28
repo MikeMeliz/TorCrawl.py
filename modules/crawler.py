@@ -163,7 +163,17 @@ class Crawler:
                         continue
 
                 try:
-                    soup = BeautifulSoup(html_page, features="html.parser")
+                    raw_content = html_page.read()
+                    if isinstance(raw_content, (bytes, bytearray)):
+                        html_content = raw_content.decode('utf-8', errors='ignore')
+                    else:
+                        html_content = str(raw_content)
+                except Exception:
+                    self.write_log(f"[INFO] ERROR: Unable to read content from: {str(item)}\n")
+                    continue
+
+                try:
+                    soup = BeautifulSoup(html_content, features="html.parser")
                 except TypeError:
                     print(f"## Soup Error Encountered:: couldn't parse "
                           f"ord_list # {ord_lst_ind}::{ord_lst[ord_lst_ind]}")
@@ -191,19 +201,21 @@ class Crawler:
                     if ver_link is not None:
                         lst.add(ver_link)
 
-                # TODO: For non-formal links, using RegEx, should be an additional parameter, and all patterns to be stored in a file
-                # url_pattern = r'/(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[A-Z0-9+&@#\/%=~_|$])/igm'
-                # html_content = urllib.request.urlopen(self.website).read().decode('utf-8')
-                
-                # if self.verbose:
-                #     print("## Starting RegEx parsing of the page")
-                # found_regex = re.findall(url_pattern, html_content)
-                # for link in found_regex:
-                #     if self.excludes(link):
-                #         continue
-                #     ver_link = self.canonical(link)
-                #     if ver_link is not None:
-                #         lst.add(ver_link)
+                # Additional regex sweep for links not inside <a> or <area> tags.
+                # TODO: Allow configurable regex patterns provided via file/argument.
+                url_pattern = r'(?:(?:https?|ftp|file):\/\/|www\.)[^\s"\'<>]+'
+                if self.verbose:
+                    print("## Starting RegEx parsing of the page")
+                found_regex = re.findall(url_pattern, html_content, re.IGNORECASE)
+                for link in found_regex:
+                    link = link.rstrip('),.;\'"')
+                    if link.startswith('www.'):
+                        link = f"https://{link}"
+                    if self.excludes(link):
+                        continue
+                    ver_link = self.canonical(link)
+                    if ver_link is not None:
+                        lst.add(ver_link)
 
                 # TODO: For images
                 # TODO: For scripts

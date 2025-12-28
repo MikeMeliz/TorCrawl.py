@@ -1,5 +1,6 @@
 import shutil
 import unittest
+from unittest.mock import patch
 
 from modules.crawler import Crawler
 from modules.checker import url_canon
@@ -54,3 +55,27 @@ class TestCrawlerFunctions(unittest.TestCase):
         # TODO: Test Crawler.crawl against live web application.
         # Re-instantiate crawler with live application.
         pass
+
+    @patch.object(Crawler, "_make_request")
+    def test_crawl_regex_finds_plain_urls(self, mock_request):
+        """Ensure regex fallback finds URLs not wrapped in <a>/<area> tags."""
+        html = b"""
+        <html><body>
+        This page mentions https://torcrawl.com/hidden-page without a link tag.
+        </body></html>
+        """
+
+        class FakeResponse:
+            status = 200
+
+            def read(self_inner):
+                return html
+
+        mock_request.return_value = FakeResponse()
+
+        # Enable at least one crawl step to trigger parsing.
+        self.crawler.c_depth = 1
+
+        result = self.crawler.crawl()
+
+        self.assertIn("https://torcrawl.com/hidden-page", result)

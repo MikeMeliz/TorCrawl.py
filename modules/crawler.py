@@ -7,6 +7,8 @@ import datetime
 import time
 import urllib.request
 from urllib.error import HTTPError, URLError
+import json
+import xml.etree.ElementTree as ET
 
 from bs4 import BeautifulSoup
 from modules.checker import get_random_user_agent
@@ -31,6 +33,16 @@ class Crawler:
         self.random_ua = random_ua
         self.random_proxy = random_proxy
         self.regex_patterns = self._load_regex_patterns()
+        self.timestamp = datetime.datetime.now().strftime("%y%m%d")
+        self.findings = {
+            "links": set(),
+            "external_links": set(),
+            "images": set(),
+            "scripts": set(),
+            "telephones": set(),
+            "emails": set(),
+            "files": set(),
+        }
 
     def _load_regex_patterns(self):
         """Load regex patterns from res/regex_patterns.txt plus default URL pattern."""
@@ -64,7 +76,7 @@ class Crawler:
         :param link: String
         :return: Boolean
         """
-        now = datetime.datetime.now().strftime("%y%m%d")
+        now = self.timestamp
 
         # BeautifulSoup returns tags without href; skip missing targets early
         if link is None:
@@ -77,44 +89,52 @@ class Crawler:
             img_path = self.out_path + '/' + now + '_images.txt'
             with open(img_path, 'a+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
+            self.findings["images"].add(str(link))
             if link.startswith('http') and not link.startswith(self.website):
                 file_path = self.out_path + '/' + now + '_ext-links.txt'
                 with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                     lst_file.write(str(link) + '\n')
+                self.findings["external_links"].add(str(link))
             return True
         # Script links (log separately; also record as external when out of scope)
         elif re.search('^.*\\.(js|mjs|ts|jsx|tsx)$', link, re.IGNORECASE):
             script_path = self.out_path + '/' + now + '_scripts.txt'
             with open(script_path, 'a+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
+            self.findings["scripts"].add(str(link))
             if link.startswith('http') and not link.startswith(self.website):
                 file_path = self.out_path + '/' + now + '_ext-links.txt'
                 with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                     lst_file.write(str(link) + '\n')
+                self.findings["external_links"].add(str(link))
             return True
         # External links
         elif link.startswith('http') and not link.startswith(self.website):
             file_path = self.out_path + '/' + now + '_ext-links.txt'
             with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
+            self.findings["external_links"].add(str(link))
             return True
         # Telephone Number
         elif link.startswith('tel:'):
             file_path = self.out_path + '/' + now + '_telephones.txt'
             with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
+            self.findings["telephones"].add(str(link))
             return True
         # Mails
         elif link.startswith('mailto:'):
             file_path = self.out_path + '/' + now + '_mails.txt'
             with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
+            self.findings["emails"].add(str(link))
             return True
         # Other files
         elif re.search('^.*\\.(pdf|doc)$', link, re.IGNORECASE):
             file_path = self.out_path + '/' + now + '_files.txt'
             with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
+            self.findings["files"].add(str(link))
             return True
 
     def canonical(self, link):
@@ -184,6 +204,7 @@ class Crawler:
         lst = set()
         ord_lst = []
         ord_lst.insert(0, self.website)
+        self.findings["links"].add(self.website)
         ord_lst_ind = 0
 
         print(f"## Crawler started from {self.website} with "
@@ -242,6 +263,7 @@ class Crawler:
                     ver_link = self.canonical(link)
                     if ver_link is not None:
                         lst.add(ver_link)
+                        self.findings["links"].add(ver_link)
 
                 # For each <area> tag.
                 for link in soup.find_all('area'):
@@ -253,6 +275,7 @@ class Crawler:
                     ver_link = self.canonical(link)
                     if ver_link is not None:
                         lst.add(ver_link)
+                        self.findings["links"].add(ver_link)
 
                 # Additional regex sweep for links not inside <a> or <area> tags.
                 if self.verbose:
@@ -269,6 +292,7 @@ class Crawler:
                         ver_link = self.canonical(link)
                         if ver_link is not None:
                             lst.add(ver_link)
+                            self.findings["links"].add(ver_link)
 
                 # Pass new on list and re-set it to delete duplicates.
                 ord_lst = ord_lst + list(set(lst))
@@ -291,3 +315,55 @@ class Crawler:
                   f"with: {str(len(ord_lst))} result(s)")
 
         return ord_lst
+
+    def _serialized_findings(self):
+        """Return findings as JSON-serializable dict."""
+        return {
+            "start_url": self.website,
+            "links": sorted(self.findings["links"]),
+            "external_links": sorted(self.findings["external_links"]),
+            "images": sorted(self.findings["images"]),
+            "scripts": sorted(self.findings["scripts"]),
+            "telephones": sorted(self.findings["telephones"]),
+            "emails": sorted(self.findings["emails"]),
+            "files": sorted(self.findings["files"]),
+        }
+
+    def _build_xml_tree(self, data):
+        """Build XML tree from findings data."""
+        root = ET.Element("crawl", start_url=data.get("start_url", ""))
+        tag_map = {
+            "links": "link",
+            "external_links": "external_link",
+            "images": "image",
+            "scripts": "script",
+            "telephones": "telephone",
+            "emails": "email",
+            "files": "file",
+        }
+
+        for section, child_tag in tag_map.items():
+            section_el = ET.SubElement(root, section)
+            for item in data.get(section, []):
+                child = ET.SubElement(section_el, child_tag)
+                child.text = item
+        return root
+
+    def export_findings(self, export_path, prefix, export_json=False, export_xml=False):
+        """Export findings to JSON and/or XML while keeping txt outputs intact."""
+        data = self._serialized_findings()
+
+        if export_json:
+            json_path = os.path.join(export_path, f"{prefix}.json")
+            with open(json_path, "w", encoding="UTF-8") as json_file:
+                json.dump(data, json_file, indent=2, ensure_ascii=False)
+            if self.verbose:
+                print(f"## JSON results created at: {json_path}")
+
+        if export_xml:
+            xml_path = os.path.join(export_path, f"{prefix}.xml")
+            root = self._build_xml_tree(data)
+            tree = ET.ElementTree(root)
+            tree.write(xml_path, encoding="UTF-8", xml_declaration=True)
+            if self.verbose:
+                print(f"## XML results created at: {xml_path}")

@@ -170,6 +170,20 @@ def main():
         help='The root directory which will contain the generated files'
     )
     parser.add_argument(
+        '-j',
+        '--json',
+        dest='json_export',
+        action='store_true',
+        help='Export crawl findings to JSON in addition to txt outputs'
+    )
+    parser.add_argument(
+        '-x',
+        '--xml',
+        dest='xml_export',
+        action='store_true',
+        help='Export crawl findings to XML in addition to txt outputs'
+    )
+    parser.add_argument(
         '-y',
         '--yara',
         help='Check for keywords and only scrape documents that contain a '
@@ -258,6 +272,14 @@ def main():
         if args.extract:
             extractor(website, args.crawl, output_file, input_file, output_folder,
                       selection_yara, random_ua, random_proxy)
+
+        if args.json_export or args.xml_export:
+            crawler.export_findings(
+                output_folder,
+                f"{now}_results",
+                export_json=args.json_export,
+                export_xml=args.xml_export
+            )
     else:
         extractor(website, args.crawl, output_file, input_file, output_folder,
                   selection_yara, random_ua, random_proxy)

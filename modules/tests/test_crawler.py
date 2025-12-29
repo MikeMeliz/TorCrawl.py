@@ -1,8 +1,13 @@
+import os
 import shutil
 import tempfile
 import unittest
+import datetime
+from unittest.mock import patch
 from unittest import mock
 import urllib.request
+import json
+import xml.etree.ElementTree as ET
 
 from modules.crawler import Crawler
 from modules.checker import url_canon
@@ -57,6 +62,133 @@ class TestCrawlerFunctions(unittest.TestCase):
         # TODO: Test Crawler.crawl against live web application.
         # Re-instantiate crawler with live application.
         pass
+
+    def test_excludes_writes_images_file(self):
+        """Image links are excluded and logged to _images.txt."""
+        now = self.crawler.timestamp
+        img_link = 'https://torcrawl.com/res/test-image.png'
+        self.assertTrue(self.crawler.excludes(img_link))
+
+        img_file = f"{self.out_path}/{now}_images.txt"
+        with open(img_file, 'r', encoding='UTF-8') as f:
+            contents = f.read()
+        self.assertIn(img_link, contents)
+
+    def test_excludes_writes_scripts_file(self):
+        """Script links are excluded and logged to _scripts.txt."""
+        now = self.crawler.timestamp
+        script_link = 'https://torcrawl.com/static/app.js'
+        self.assertTrue(self.crawler.excludes(script_link))
+
+        scripts_file = f"{self.out_path}/{now}_scripts.txt"
+        with open(scripts_file, 'r', encoding='UTF-8') as f:
+            contents = f.read()
+        self.assertIn(script_link, contents)
+
+    @patch.object(Crawler, "_make_request")
+    def test_crawl_regex_finds_plain_urls(self, mock_request):
+        """Ensure regex fallback finds URLs not wrapped in <a>/<area> tags."""
+        html = b"""
+        <html><body>
+        This page mentions https://torcrawl.com/hidden-page without a link tag.
+        </body></html>
+        """
+
+        class FakeResponse:
+            status = 200
+
+            def read(self_inner):
+                return html
+
+        mock_request.return_value = FakeResponse()
+
+        # Enable at least one crawl step to trigger parsing.
+        self.crawler.c_depth = 1
+
+        result = self.crawler.crawl()
+
+        self.assertIn("https://torcrawl.com/hidden-page", result)
+
+    @patch.object(Crawler, "_make_request")
+    def test_crawl_custom_regex_file_patterns(self, mock_request):
+        """Custom regex patterns from default file are applied to discover links."""
+        html = b"""
+        <html><body>
+        Resource reference: /deep/custom-path
+        Secondary ref: /deep/second-path
+        </body></html>
+        """
+
+        class FakeResponse:
+            status = 200
+
+            def read(self_inner):
+                return html
+
+        mock_request.return_value = FakeResponse()
+
+        with tempfile.NamedTemporaryFile('w+', delete=False, encoding='utf-8') as regex_file:
+            regex_file.write(r"/deep/[a-z-]+")
+            regex_file_path = regex_file.name
+
+        self.addCleanup(lambda: os.path.exists(regex_file_path) and os.remove(regex_file_path))
+
+        with patch('modules.crawler.DEFAULT_REGEX_FILE', regex_file_path):
+            crawler = Crawler(self.crawler.website, 1, 0, self.out_path, False, False)
+
+        result = crawler.crawl()
+
+        self.assertIn("https://torcrawl.com/deep/custom-path", result)
+        self.assertIn("https://torcrawl.com/deep/second-path", result)
+
+    def test_export_findings_creates_json(self):
+        """Findings are exported to JSON with separated sections."""
+        prefix = f"{self.crawler.timestamp}_results_test"
+        self.crawler.findings["links"].update({"https://torcrawl.com", "https://torcrawl.com/about"})
+        self.crawler.findings["external_links"].add("https://external.com/path")
+        self.crawler.findings["images"].add("https://torcrawl.com/img/logo.png")
+        self.crawler.findings["emails"].add("mailto:test@torcrawl.com")
+
+        self.crawler.export_findings(self.out_path, prefix, export_json=True, export_xml=False)
+
+        json_path = os.path.join(self.out_path, f"{prefix}.json")
+        self.assertTrue(os.path.exists(json_path))
+
+        with open(json_path, "r", encoding="UTF-8") as json_file:
+            payload = json.load(json_file)
+
+        self.assertIn("links", payload)
+        self.assertIn("external_links", payload)
+        self.assertIn("images", payload)
+        self.assertIn("emails", payload)
+        self.assertIn("https://torcrawl.com/about", payload["links"])
+        self.assertIn("https://external.com/path", payload["external_links"])
+
+    def test_export_findings_creates_xml(self):
+        """Findings are exported to XML with separated sections."""
+        prefix = f"{self.crawler.timestamp}_results_test_xml"
+        self.crawler.findings["links"].update({"https://torcrawl.com"})
+        self.crawler.findings["scripts"].add("https://torcrawl.com/static/app.js")
+        self.crawler.findings["telephones"].add("tel:012-013-104-5")
+
+        self.crawler.export_findings(self.out_path, prefix, export_json=False, export_xml=True)
+
+        xml_path = os.path.join(self.out_path, f"{prefix}.xml")
+        self.assertTrue(os.path.exists(xml_path))
+
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+
+        links_section = root.find("links")
+        scripts_section = root.find("scripts")
+        telephones_section = root.find("telephones")
+
+        self.assertIsNotNone(links_section)
+        self.assertIsNotNone(scripts_section)
+        self.assertIsNotNone(telephones_section)
+        self.assertEqual(links_section[0].text, "https://torcrawl.com")
+        self.assertEqual(scripts_section[0].text, "https://torcrawl.com/static/app.js")
+        self.assertEqual(telephones_section[0].text, "tel:012-013-104-5")
 
     def test_make_request_with_random_ua_and_proxy(self):
         crawler = Crawler("http://example.com", 0, 0, self.out_path, False, False, random_ua=True, random_proxy=True)

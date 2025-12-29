@@ -83,7 +83,7 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
 | -v           | --verbose           | Show more information about the progress                                               |
 | -u           | --url *.onion       | URL of Webpage to crawl or extract                                                     |
 | -w           | --without           | Without using TOR Network                                                              |
-| -rua         | --random-ua         | Enable random user-agent rotation for requests (works with both TOR and clearnet)     |
+| -rua         | --random-ua         | Enable random user-agent rotation for requests     |
 | -rpr         | --random-proxy       | Enable random proxy rotation from res/proxies.txt (requires -w flag, one proxy per line, format: host:port) |
 | -px          | --proxy             | IP address for SOCKS5 proxy (Default: 127.0.0.1 for using TOR)                         |
 | -pr          | --proxyport         | Port for SOCKS5 proxy (Default: 9050)                                                  |
@@ -98,6 +98,8 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
 | -c           | --crawl             | Crawl website (Default output on website/links.txt)                                    |
 | -d           | --depth             | Set depth of crawler's travel (Default: 1)                                             |
 | -p           | --pause             | Seconds of pause between requests (Default: 0)                                         |
+| -j           | --json              | Export crawl findings to JSON in addition to txt outputs                               |
+| -x           | --xml               | Export crawl findings to XML in addition to txt outputs                                |
 | -l           | --log               | Log file with visited URLs and their response code                                     |
 
 ## Usage & Examples

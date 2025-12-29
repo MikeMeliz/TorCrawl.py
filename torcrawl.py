@@ -16,6 +16,9 @@ General:
 -w, --without      : Without the use of Relay TOR
 -rua, --random-ua  : Enable random user-agent rotation for requests
 -rpr, --random-proxy: Enable random proxy rotation from res/proxies.txt
+-px, --proxy       : IP address for SOCKS5 proxy
+-pr, --proxyport   : Port for SOCKS5 proxy
+-V, --version      : Show version and exit
 
 Extract:
 -e, --extract           : Extract page's code to terminal or file.
@@ -29,13 +32,11 @@ Extract:
 
 Crawl:
 -c, --crawl       : Crawl website (Default output on /links.txt)
--d, --depth      : Set depth of crawl's travel (Default: 1)
--z, --exclusions  : Paths that you don't want to include (TODO)
--s, --simultaneous: How many pages to visit at the same time (TODO)
--p, --pause       : The length of time the crawler will pause
-                    (Default: 0)
--f, --folder	  : The root directory which will contain the
-                    generated files
+-d, --depth       : Set depth of crawl's travel (Default: 1)
+-p, --pause       : The length of time the crawler will pause (Default: 0)
+-f, --folder      : The directory which will contain the generated files
+-j, --json        : Export crawl findings to JSON in addition to txt outputs
+-x, --xml         : Export crawl findings to XML in addition to txt outputs
 -l, --log         : Log file with visited URLs and their response code.
 
 GitHub: github.com/MikeMeliz/TorCrawl.py
@@ -170,6 +171,20 @@ def main():
         help='The root directory which will contain the generated files'
     )
     parser.add_argument(
+        '-j',
+        '--json',
+        dest='json_export',
+        action='store_true',
+        help='Export crawl findings to JSON in addition to txt outputs'
+    )
+    parser.add_argument(
+        '-x',
+        '--xml',
+        dest='xml_export',
+        action='store_true',
+        help='Export crawl findings to XML in addition to txt outputs'
+    )
+    parser.add_argument(
         '-y',
         '--yara',
         help='Check for keywords and only scrape documents that contain a '
@@ -258,6 +273,14 @@ def main():
         if args.extract:
             extractor(website, args.crawl, output_file, input_file, output_folder,
                       selection_yara, random_ua, random_proxy)
+
+        if args.json_export or args.xml_export:
+            crawler.export_findings(
+                output_folder,
+                f"{now}_results",
+                export_json=args.json_export,
+                export_xml=args.xml_export
+            )
     else:
         extractor(website, args.crawl, output_file, input_file, output_folder,
                   selection_yara, random_ua, random_proxy)

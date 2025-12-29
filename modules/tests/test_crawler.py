@@ -7,6 +7,7 @@ from unittest.mock import patch
 from unittest import mock
 import urllib.request
 import json
+import sqlite3
 import xml.etree.ElementTree as ET
 
 from modules.crawler import Crawler
@@ -189,6 +190,31 @@ class TestCrawlerFunctions(unittest.TestCase):
         self.assertEqual(links_section[0].text, "https://torcrawl.com")
         self.assertEqual(scripts_section[0].text, "https://torcrawl.com/static/app.js")
         self.assertEqual(telephones_section[0].text, "tel:012-013-104-5")
+
+    def test_export_database_stores_nodes_edges_and_titles(self):
+        """SQLite export stores nodes, edges, and titles."""
+        prefix = f"{self.crawler.timestamp}_results_test_db"
+        self.crawler.findings["links"].update({"https://torcrawl.com", "https://torcrawl.com/about"})
+        self.crawler.edges.add(("https://torcrawl.com", "https://torcrawl.com/about"))
+        self.crawler.titles["https://torcrawl.com"] = "Home"
+        self.crawler.titles["https://torcrawl.com/about"] = "About"
+
+        self.crawler.export_database(self.out_path, prefix)
+
+        db_path = os.path.join(self.out_path, f"{prefix}.db")
+        self.assertTrue(os.path.exists(db_path))
+
+        conn = sqlite3.connect(db_path)
+        with conn:
+            cur = conn.cursor()
+            cur.execute("SELECT url, title FROM nodes ORDER BY url;")
+            rows = cur.fetchall()
+            self.assertIn(("https://torcrawl.com", "Home"), rows)
+            self.assertIn(("https://torcrawl.com/about", "About"), rows)
+
+            cur.execute("SELECT from_url, to_url FROM edges;")
+            edges = cur.fetchall()
+            self.assertIn(("https://torcrawl.com", "https://torcrawl.com/about"), edges)
 
     def test_make_request_with_random_ua_and_proxy(self):
         crawler = Crawler("http://example.com", 0, 0, self.out_path, False, False, random_ua=True, random_proxy=True)

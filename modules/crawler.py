@@ -43,6 +43,8 @@ class Crawler:
             "emails": set(),
             "files": set(),
         }
+        self.edges = set()
+        self.titles = {}
 
     def _load_regex_patterns(self):
         """Load regex patterns from res/regex_patterns.txt plus default URL pattern."""
@@ -253,6 +255,12 @@ class Crawler:
                           f"ord_list # {ord_lst_ind}::{ord_lst[ord_lst_ind]}")
                     continue
 
+                source_url = item if item else self.website
+                page_title = None
+                if soup.title and soup.title.string:
+                    page_title = soup.title.string.strip()
+                self.titles[source_url] = page_title
+
                 # For each <a href=""> tag.
                 for link in soup.find_all('a'):
                     link = link.get('href')
@@ -264,6 +272,7 @@ class Crawler:
                     if ver_link is not None:
                         lst.add(ver_link)
                         self.findings["links"].add(ver_link)
+                        self.edges.add((source_url, ver_link))
 
                 # For each <area> tag.
                 for link in soup.find_all('area'):
@@ -276,6 +285,7 @@ class Crawler:
                     if ver_link is not None:
                         lst.add(ver_link)
                         self.findings["links"].add(ver_link)
+                        self.edges.add((source_url, ver_link))
 
                 # Additional regex sweep for links not inside <a> or <area> tags.
                 if self.verbose:
@@ -293,6 +303,7 @@ class Crawler:
                         if ver_link is not None:
                             lst.add(ver_link)
                             self.findings["links"].add(ver_link)
+                            self.edges.add((source_url, ver_link))
 
                 # Pass new on list and re-set it to delete duplicates.
                 ord_lst = ord_lst + list(set(lst))
@@ -367,3 +378,46 @@ class Crawler:
             tree.write(xml_path, encoding="UTF-8", xml_declaration=True)
             if self.verbose:
                 print(f"## XML results created at: {xml_path}")
+
+    def export_database(self, export_path, prefix):
+        """Export findings and link relationships to SQLite database."""
+        import sqlite3
+
+        db_path = os.path.join(export_path, f"{prefix}.db")
+        data = self._serialized_findings()
+
+        nodes = set(data["links"])
+        nodes.update([edge[0] for edge in self.edges])
+        nodes.update([edge[1] for edge in self.edges])
+
+        conn = sqlite3.connect(db_path)
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS nodes (
+                    url TEXT PRIMARY KEY,
+                    title TEXT
+                );
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS edges (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    from_url TEXT,
+                    to_url TEXT
+                );
+            """)
+
+            cur.executemany(
+                "INSERT OR REPLACE INTO nodes(url, title) VALUES(?, ?);",
+                [(url, self.titles.get(url)) for url in nodes]
+            )
+
+            cur.executemany(
+                "INSERT OR IGNORE INTO edges(from_url, to_url) VALUES(?, ?);",
+                list(self.edges)
+            )
+            conn.commit()
+            if self.verbose:
+                print(f"## SQLite results created at: {db_path}")
+        finally:
+            conn.close()

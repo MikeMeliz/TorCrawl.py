@@ -37,6 +37,7 @@ Crawl:
 -f, --folder      : The directory which will contain the generated files
 -j, --json        : Export crawl findings to JSON in addition to txt outputs
 -x, --xml         : Export crawl findings to XML in addition to txt outputs
+-DB, --database   : Export crawl findings and link graph to SQLite database
 -l, --log         : Log file with visited URLs and their response code.
 
 GitHub: github.com/MikeMeliz/TorCrawl.py
@@ -185,6 +186,13 @@ def main():
         help='Export crawl findings to XML in addition to txt outputs'
     )
     parser.add_argument(
+        '-DB',
+        '--database',
+        dest='database_export',
+        action='store_true',
+        help='Export crawl findings and link graph to SQLite database'
+    )
+    parser.add_argument(
         '-y',
         '--yara',
         help='Check for keywords and only scrape documents that contain a '
@@ -280,6 +288,11 @@ def main():
                 f"{now}_results",
                 export_json=args.json_export,
                 export_xml=args.xml_export
+            )
+        if args.database_export:
+            crawler.export_database(
+                output_folder,
+                f"{now}_results"
             )
     else:
         extractor(website, args.crawl, output_file, input_file, output_folder,

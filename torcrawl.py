@@ -16,6 +16,9 @@ General:
 -w, --without      : Without the use of Relay TOR
 -rua, --random-ua  : Enable random user-agent rotation for requests
 -rpr, --random-proxy: Enable random proxy rotation from res/proxies.txt
+-px, --proxy       : IP address for SOCKS5 proxy
+-pr, --proxyport   : Port for SOCKS5 proxy
+-V, --version      : Show version and exit
 
 Extract:
 -e, --extract           : Extract page's code to terminal or file.
@@ -29,13 +32,11 @@ Extract:
 
 Crawl:
 -c, --crawl       : Crawl website (Default output on /links.txt)
--d, --depth      : Set depth of crawl's travel (Default: 1)
--z, --exclusions  : Paths that you don't want to include (TODO)
--s, --simultaneous: How many pages to visit at the same time (TODO)
--p, --pause       : The length of time the crawler will pause
-                    (Default: 0)
--f, --folder	  : The root directory which will contain the
-                    generated files
+-d, --depth       : Set depth of crawl's travel (Default: 1)
+-p, --pause       : The length of time the crawler will pause (Default: 0)
+-f, --folder      : The directory which will contain the generated files
+-j, --json        : Export crawl findings to JSON in addition to txt outputs
+-x, --xml         : Export crawl findings to XML in addition to txt outputs
 -l, --log         : Log file with visited URLs and their response code.
 
 GitHub: github.com/MikeMeliz/TorCrawl.py

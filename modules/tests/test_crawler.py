@@ -4,6 +4,8 @@ import tempfile
 import unittest
 import datetime
 from unittest.mock import patch
+from unittest import mock
+import urllib.request
 import json
 import xml.etree.ElementTree as ET
 
@@ -187,3 +189,44 @@ class TestCrawlerFunctions(unittest.TestCase):
         self.assertEqual(links_section[0].text, "https://torcrawl.com")
         self.assertEqual(scripts_section[0].text, "https://torcrawl.com/static/app.js")
         self.assertEqual(telephones_section[0].text, "tel:012-013-104-5")
+
+    def test_make_request_with_random_ua_and_proxy(self):
+        crawler = Crawler("http://example.com", 0, 0, self.out_path, False, False, random_ua=True, random_proxy=True)
+        with mock.patch("modules.crawler.get_random_proxy", return_value="proxy:9050") as proxy_mock, \
+             mock.patch("modules.crawler.setup_proxy_connection") as setup_mock, \
+             mock.patch("modules.crawler.get_random_user_agent", return_value="UA") as ua_mock, \
+             mock.patch("modules.crawler.urllib.request.urlopen") as urlopen_mock:
+            crawler._make_request("http://example.com")
+        proxy_mock.assert_called_once()
+        setup_mock.assert_called_once_with("proxy:9050")
+        req_arg = urlopen_mock.call_args[0][0]
+        self.assertIsInstance(req_arg, urllib.request.Request)
+        # urllib stores header keys normalized to title-case "User-agent"
+        self.assertEqual(req_arg.get_header("User-agent"), "UA")
+
+    def test_make_request_without_randoms(self):
+        crawler = Crawler("http://example.com", 0, 0, self.out_path, False, False, random_ua=False, random_proxy=False)
+        with mock.patch("modules.crawler.urllib.request.urlopen") as urlopen_mock:
+            crawler._make_request("http://example.com")
+        urlopen_mock.assert_called_once_with("http://example.com")
+
+    def test_crawl_collects_links(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            crawler = Crawler("https://example.com", 1, 0, temp_dir, False, False)
+
+            class DummyResponse:
+                def __init__(self, body):
+                    self.body = body
+                    self.status = 200
+
+                def read(self):
+                    return self.body
+
+            html = b"<html><a href='/page1'>p</a><a href='mailto:test@example.com'>m</a></html>"
+            dummy = DummyResponse(html)
+
+            with mock.patch.object(crawler, "_make_request", return_value=dummy):
+                result = crawler.crawl()
+
+            self.assertIn("https://example.com", result)
+            self.assertIn("https://example.com/page1", result)

@@ -216,6 +216,23 @@ class TestCrawlerFunctions(unittest.TestCase):
             edges = cur.fetchall()
             self.assertIn(("https://torcrawl.com", "https://torcrawl.com/about"), edges)
 
+    def test_export_visualization_creates_html(self):
+        """Visualization export produces an HTML graph file."""
+        prefix = f"{self.crawler.timestamp}_results_test_vis"
+        self.crawler.findings["links"].update({"https://torcrawl.com", "https://torcrawl.com/about"})
+        self.crawler.edges.add(("https://torcrawl.com", "https://torcrawl.com/about"))
+        self.crawler.titles["https://torcrawl.com"] = "Home"
+        self.crawler.titles["https://torcrawl.com/about"] = "About"
+
+        self.crawler.export_database(self.out_path, prefix)
+        self.crawler.export_visualization(self.out_path, prefix)
+
+        html_path = os.path.join(self.out_path, f"{prefix}_graph.html")
+        self.assertTrue(os.path.exists(html_path))
+        with open(html_path, "r", encoding="utf-8") as html_file:
+            contents = html_file.read()
+        self.assertIn("<html", contents.lower())
+
     def test_make_request_with_random_ua_and_proxy(self):
         crawler = Crawler("http://example.com", 0, 0, self.out_path, False, False, random_ua=True, random_proxy=True)
         with mock.patch("modules.crawler.get_random_proxy", return_value="proxy:9050") as proxy_mock, \

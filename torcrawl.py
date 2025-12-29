@@ -38,6 +38,7 @@ Crawl:
 -j, --json        : Export crawl findings to JSON in addition to txt outputs
 -x, --xml         : Export crawl findings to XML in addition to txt outputs
 -DB, --database   : Export crawl findings and link graph to SQLite database
+-vis, --visualization: Generate HTML visualization (requires -DB)
 -l, --log         : Log file with visited URLs and their response code.
 
 GitHub: github.com/MikeMeliz/TorCrawl.py
@@ -193,6 +194,13 @@ def main():
         help='Export crawl findings and link graph to SQLite database'
     )
     parser.add_argument(
+        '-vis',
+        '--visualization',
+        dest='visualization',
+        action='store_true',
+        help='Generate HTML visualization from SQLite database (requires -DB)'
+    )
+    parser.add_argument(
         '-y',
         '--yara',
         help='Check for keywords and only scrape documents that contain a '
@@ -224,18 +232,24 @@ def main():
     args = parser.parse_args()
 
     now = datetime.datetime.now().strftime("%y%m%d")
+    results_prefix = f"{now}_results"
 
     # Canonicalization of web url and create path for output.
     website = ''
     output_folder = ''
+    url_arg = args.url.strip() if args.url else ''
 
-    if args.input: pass
-    elif len(args.url) > 0:
-        website = url_canon(args.url, args.verbose)
+    if args.input:
+        pass
+    elif len(url_arg) > 0:
+        website = url_canon(url_arg, args.verbose)
         if args.folder is not None:
             output_folder = folder(args.folder, args.verbose)
         else:
             output_folder = folder(extract_domain(website), args.verbose)
+    else:
+        print("## ERROR: URL is required unless --input is provided.")
+        sys.exit(2)
 
     # Parse arguments to variables else initiate variables.
     input_file = args.input if args.input else ''
@@ -245,6 +259,11 @@ def main():
     selection_yara = args.yara if args.yara else None
     random_ua = args.random_ua
     random_proxy = args.random_proxy
+
+    # Visualization requires database export.
+    if args.visualization and not args.database_export:
+        print("## Visualization requires --database (-DB) to generate the SQLite file.")
+        sys.exit(2)
 
     # Random proxy rotation only works when TOR is disabled
     if random_proxy and args.without is False:
@@ -285,14 +304,19 @@ def main():
         if args.json_export or args.xml_export:
             crawler.export_findings(
                 output_folder,
-                f"{now}_results",
+                results_prefix,
                 export_json=args.json_export,
                 export_xml=args.xml_export
             )
         if args.database_export:
             crawler.export_database(
                 output_folder,
-                f"{now}_results"
+                results_prefix
+            )
+        if args.visualization:
+            crawler.export_visualization(
+                output_folder,
+                results_prefix
             )
     else:
         extractor(website, args.crawl, output_file, input_file, output_folder,

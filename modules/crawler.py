@@ -9,6 +9,7 @@ import urllib.request
 from urllib.error import HTTPError, URLError
 import json
 import xml.etree.ElementTree as ET
+import sqlite3
 
 from bs4 import BeautifulSoup
 from modules.checker import get_random_user_agent
@@ -381,8 +382,6 @@ class Crawler:
 
     def export_database(self, export_path, prefix):
         """Export findings and link relationships to SQLite database."""
-        import sqlite3
-
         db_path = os.path.join(export_path, f"{prefix}.db")
         data = self._serialized_findings()
 
@@ -421,3 +420,65 @@ class Crawler:
                 print(f"## SQLite results created at: {db_path}")
         finally:
             conn.close()
+
+    def export_visualization(self, export_path, prefix):
+        """Generate an HTML visualization from the SQLite database using NetworkX and PyVis."""
+        db_path = os.path.join(export_path, f"{prefix}.db")
+        if not os.path.exists(db_path):
+            print("## Visualization skipped: database not found. Use --database (-DB).")
+            return
+
+        # Load nodes and edges from database
+        conn = sqlite3.connect(db_path)
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT url, title FROM nodes;")
+            nodes = cur.fetchall()
+            cur.execute("SELECT from_url, to_url FROM edges;")
+            edges = cur.fetchall()
+        finally:
+            conn.close()
+
+        import networkx as nx  # type: ignore
+        from pyvis.network import Network  # type: ignore
+
+        graph = nx.DiGraph()
+        for url, title in nodes:
+            graph.add_node(url, title=title or url, label=title or url)
+        for src, dst in edges:
+            if src and dst:
+                graph.add_edge(src, dst)
+
+        net = Network(height="750px", width="100%", directed=True, notebook=False, bgcolor="#222222", font_color="white", filter_menu=True)
+        net.from_nx(graph)
+        net.set_options("""
+        {
+          "physics": {
+            "enabled": true,
+            "stabilization": {
+              "enabled": true,
+              "iterations": 200,
+              "fit": true
+            }
+          },
+          "layout": {
+            "improvedLayout": true
+          },
+          "interaction": {
+            "hover": true
+          }
+        }
+        """)
+
+        # Ensure labels fall back to id/title for readability and add hover title with page title + URL
+        for node in net.nodes:
+            label = node.get("label") or node.get("title") or node.get("id")
+            url = node.get("id")
+            title = node.get("title") or label
+            node["label"] = label
+            node["title"] = f"{title}<br/>{url}" if url else title
+
+        html_path = os.path.join(export_path, f"{prefix}_graph.html")
+        net.write_html(html_path)
+        if self.verbose:
+            print(f"## Visualization created at: {html_path}")

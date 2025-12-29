@@ -101,6 +101,7 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
 | -j           | --json              | Export crawl findings to JSON in addition to txt outputs                               |
 | -x           | --xml               | Export crawl findings to XML in addition to txt outputs                                |
 | -DB          | --database          | Export crawl findings and link graph to SQLite database                                |
+| -vis         | --visualization     | Generate HTML visualization from SQLite database (requires -DB)                        |
 | -l           | --log               | Log file with visited URLs and their response code                                     |
 
 ## Usage & Examples

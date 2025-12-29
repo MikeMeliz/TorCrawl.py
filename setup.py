@@ -28,9 +28,11 @@ setup(
         'beautifulsoup4>=4.7.1',
         'yara-python',
         'lxml',
+        'networkx',
+        'pyvis',
     ],
     package_data={
-        'res': ['keywords.yar', 'proxies.txt', 'user_agents.txt'],
+        'res': ['keywords.yar', 'proxies.txt', 'user_agents.txt', 'regex_patterns.txt'],
     },
     include_package_data=True,
     entry_points={

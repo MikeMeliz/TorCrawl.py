@@ -13,9 +13,15 @@ from modules.checker import get_random_user_agent
 from modules.checker import get_random_proxy
 from modules.checker import setup_proxy_connection
 
+DEFAULT_URL_REGEX = r'(?:(?:https?|ftp|file):\/\/|www\.)[^\s"\'<>]+'
+DEFAULT_REGEX_FILE = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.pardir, 'res', 'regex_patterns.txt')
+)
+
 
 class Crawler:
-    def __init__(self, website, c_depth, c_pause, out_path, logs, verbose, random_ua=False, random_proxy=False):
+    def __init__(self, website, c_depth, c_pause, out_path, logs, verbose,
+                 random_ua=False, random_proxy=False):
         self.website = website
         self.c_depth = c_depth
         self.c_pause = c_pause
@@ -24,6 +30,33 @@ class Crawler:
         self.verbose = verbose
         self.random_ua = random_ua
         self.random_proxy = random_proxy
+        self.regex_patterns = self._load_regex_patterns()
+
+    def _load_regex_patterns(self):
+        """Load regex patterns from res/regex_patterns.txt plus default URL pattern."""
+        patterns = [DEFAULT_URL_REGEX]
+
+        # Only read patterns from the dedicated file.
+        try:
+            if os.path.exists(DEFAULT_REGEX_FILE):
+                with open(DEFAULT_REGEX_FILE, 'r', encoding='UTF-8') as pattern_file:
+                    for line in pattern_file:
+                        stripped = line.strip()
+                        if stripped and not stripped.startswith('#'):
+                            patterns.append(stripped)
+        except OSError as err:
+            print(f"## Unable to read regex pattern file {DEFAULT_REGEX_FILE}: {err}")
+            self.write_log(f"[INFO] WARN: Unable to read regex pattern file {DEFAULT_REGEX_FILE}: {err}\n")
+
+        compiled_patterns = []
+        for pattern in patterns:
+            try:
+                compiled_patterns.append(re.compile(pattern, re.IGNORECASE))
+            except re.error as err:
+                print(f"## Skipping invalid regex pattern '{pattern}': {err}")
+                self.write_log(f"[INFO] WARN: Skipping invalid regex pattern '{pattern}': {err}\n")
+
+        return compiled_patterns
 
     def excludes(self, link):
         """ Excludes links that are not required.
@@ -222,20 +255,20 @@ class Crawler:
                         lst.add(ver_link)
 
                 # Additional regex sweep for links not inside <a> or <area> tags.
-                # TODO: Allow configurable regex patterns provided via file/argument.
-                url_pattern = r'(?:(?:https?|ftp|file):\/\/|www\.)[^\s"\'<>]+'
                 if self.verbose:
                     print("## Starting RegEx parsing of the page")
-                found_regex = re.findall(url_pattern, html_content, re.IGNORECASE)
-                for link in found_regex:
-                    link = link.rstrip('),.;\'"')
-                    if link.startswith('www.'):
-                        link = f"https://{link}"
-                    if self.excludes(link):
-                        continue
-                    ver_link = self.canonical(link)
-                    if ver_link is not None:
-                        lst.add(ver_link)
+                for pattern in self.regex_patterns:
+                    if self.verbose:
+                        print(f"## Parsing with regex: {pattern.pattern}")
+                    for match in pattern.finditer(html_content):
+                        link = match.group(0).rstrip('),.;\'"')
+                        if link.startswith('www.'):
+                            link = f"https://{link}"
+                        if self.excludes(link):
+                            continue
+                        ver_link = self.canonical(link)
+                        if ver_link is not None:
+                            lst.add(ver_link)
 
                 # Pass new on list and re-set it to delete duplicates.
                 ord_lst = ord_lst + list(set(lst))

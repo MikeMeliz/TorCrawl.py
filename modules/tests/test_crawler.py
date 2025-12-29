@@ -1,4 +1,6 @@
+import os
 import shutil
+import tempfile
 import unittest
 import datetime
 from unittest.mock import patch
@@ -102,3 +104,35 @@ class TestCrawlerFunctions(unittest.TestCase):
         result = self.crawler.crawl()
 
         self.assertIn("https://torcrawl.com/hidden-page", result)
+
+    @patch.object(Crawler, "_make_request")
+    def test_crawl_custom_regex_file_patterns(self, mock_request):
+        """Custom regex patterns from default file are applied to discover links."""
+        html = b"""
+        <html><body>
+        Resource reference: /deep/custom-path
+        Secondary ref: /deep/second-path
+        </body></html>
+        """
+
+        class FakeResponse:
+            status = 200
+
+            def read(self_inner):
+                return html
+
+        mock_request.return_value = FakeResponse()
+
+        with tempfile.NamedTemporaryFile('w+', delete=False, encoding='utf-8') as regex_file:
+            regex_file.write(r"/deep/[a-z-]+")
+            regex_file_path = regex_file.name
+
+        self.addCleanup(lambda: os.path.exists(regex_file_path) and os.remove(regex_file_path))
+
+        with patch('modules.crawler.DEFAULT_REGEX_FILE', regex_file_path):
+            crawler = Crawler(self.crawler.website, 1, 0, self.out_path, False, False)
+
+        result = crawler.crawl()
+
+        self.assertIn("https://torcrawl.com/deep/custom-path", result)
+        self.assertIn("https://torcrawl.com/deep/second-path", result)

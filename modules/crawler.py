@@ -447,22 +447,32 @@ class Crawler:
             graph.add_node(url, title=title or url, label=title or url)
         for src, dst in edges:
             if src and dst:
-                graph.add_edge(src, dst)
+                graph.add_edge(src, dst, title=f"{src} -> {dst}")
 
-        net = Network(height="750px", width="100%", directed=True, notebook=False, bgcolor="#222222", font_color="white", filter_menu=True)
+        net = Network(
+            height="750px",
+            width="100%",
+            directed=True,
+            notebook=False,
+            bgcolor="#222222",
+            font_color="white",
+            filter_menu=False,
+            cdn_resources="remote",
+        )
         net.from_nx(graph)
         net.set_options("""
         {
           "physics": {
-            "enabled": true,
-            "stabilization": {
-              "enabled": true,
-              "iterations": 200,
-              "fit": true
-            }
+            "enabled": false
           },
           "layout": {
-            "improvedLayout": true
+            "improvedLayout": true,
+            "hierarchical": {
+              "enabled": true,
+              "sortMethod": "hubsize",
+              "direction": "LR",
+              "shakeTowards": "roots"
+            }
           },
           "interaction": {
             "hover": true
@@ -470,12 +480,12 @@ class Crawler:
         }
         """)
 
-        # Ensure labels fall back to id/title for readability and add hover title with page title + URL
+        # Ensure labels: keep root label, hide others, but preserve hover (title) with page title + URL
         for node in net.nodes:
-            label = node.get("label") or node.get("title") or node.get("id")
             url = node.get("id")
-            title = node.get("title") or label
-            node["label"] = label
+            title = node.get("title") or url
+            is_root = url == self.website
+            node["label"] = title if is_root else ""
             node["title"] = f"{title}<br/>{url}" if url else title
 
         html_path = os.path.join(export_path, f"{prefix}_graph.html")

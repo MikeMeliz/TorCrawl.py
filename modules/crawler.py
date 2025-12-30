@@ -87,11 +87,15 @@ class Crawler:
 
         # Normalize domain comparison for absolute links to avoid excluding same-domain without www
         if isinstance(link, str) and link.startswith(('http://', 'https://')):
-            parsed = urlparse(link)
-            netloc = parsed.netloc.lower()
-            candidate_domain = netloc[4:] if netloc.startswith("www.") else netloc
-            if candidate_domain == self.base_domain:
-                return False
+            try:
+                parsed = urlparse(link)
+                netloc = parsed.netloc.lower()
+                candidate_domain = netloc[4:] if netloc.startswith("www.") else netloc
+                if candidate_domain == self.base_domain:
+                    return False
+            except ValueError:
+                # Malformed URL; let the regular exclusion rules handle (or skip)
+                return True
 
         # BeautifulSoup returns tags without href; skip missing targets early
         if link is None:
@@ -163,11 +167,14 @@ class Crawler:
             return link
         # Absolute URL with same base domain but different subdomain (e.g., missing www)
         if link.startswith(('http://', 'https://')):
-            parsed = urlparse(link)
-            netloc = parsed.netloc.lower()
-            candidate_domain = netloc[4:] if netloc.startswith("www.") else netloc
-            if candidate_domain == self.base_domain:
-                return link
+            try:
+                parsed = urlparse(link)
+                netloc = parsed.netloc.lower()
+                candidate_domain = netloc[4:] if netloc.startswith("www.") else netloc
+                if candidate_domain == self.base_domain:
+                    return link
+            except ValueError:
+                return None
         # For relative paths with / in front
         elif link.startswith('/'):
             if self.website[-1] == '/':
@@ -309,10 +316,12 @@ class Crawler:
 
                 # Additional regex sweep for links not inside <a> or <area> tags.
                 if self.verbose:
-                    print("## Starting RegEx parsing of the page")
+                    # print("## Starting RegEx parsing of the page")
+                    pass
                 for pattern in self.regex_patterns:
                     if self.verbose:
-                        print(f"## Parsing with regex: {pattern.pattern}")
+                        # print(f"## Parsing with regex: {pattern.pattern}")
+                        pass
                     for match in pattern.finditer(html_content):
                         link = match.group(0).rstrip('),.;\'"')
                         if link.startswith('www.'):

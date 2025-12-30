@@ -10,6 +10,7 @@ from urllib.error import HTTPError, URLError
 import json
 import xml.etree.ElementTree as ET
 import sqlite3
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 from modules.checker import get_random_user_agent
@@ -35,6 +36,9 @@ class Crawler:
         self.random_proxy = random_proxy
         self.regex_patterns = self._load_regex_patterns()
         self.timestamp = datetime.datetime.now().strftime("%y%m%d")
+        parsed = urlparse(self.website)
+        netloc = parsed.netloc.lower()
+        self.base_domain = netloc[4:] if netloc.startswith("www.") else netloc
         self.findings = {
             "links": set(),
             "external_links": set(),
@@ -80,6 +84,14 @@ class Crawler:
         :return: Boolean
         """
         now = self.timestamp
+
+        # Normalize domain comparison for absolute links to avoid excluding same-domain without www
+        if isinstance(link, str) and link.startswith(('http://', 'https://')):
+            parsed = urlparse(link)
+            netloc = parsed.netloc.lower()
+            candidate_domain = netloc[4:] if netloc.startswith("www.") else netloc
+            if candidate_domain == self.base_domain:
+                return False
 
         # BeautifulSoup returns tags without href; skip missing targets early
         if link is None:
@@ -149,6 +161,13 @@ class Crawler:
         # Already formatted
         if link.startswith(self.website):
             return link
+        # Absolute URL with same base domain but different subdomain (e.g., missing www)
+        if link.startswith(('http://', 'https://')):
+            parsed = urlparse(link)
+            netloc = parsed.netloc.lower()
+            candidate_domain = netloc[4:] if netloc.startswith("www.") else netloc
+            if candidate_domain == self.base_domain:
+                return link
         # For relative paths with / in front
         elif link.startswith('/'):
             if self.website[-1] == '/':
@@ -463,7 +482,7 @@ class Crawler:
         net.set_options("""
         {
           "physics": {
-            "enabled": false
+            "enabled": true
           },
           "layout": {
             "improvedLayout": true,

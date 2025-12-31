@@ -135,7 +135,11 @@ def get_random_user_agent():
         user_agents_file = _read_resource_file('user_agents.txt')
         try:
             with open(user_agents_file, 'r', encoding='UTF-8') as f:
-                _user_agents_cache = [line.strip() for line in f if line.strip()]
+                _user_agents_cache = [
+                    line.strip()
+                    for line in f
+                    if line.strip() and not line.strip().startswith('#')
+                ]
         except IOError:
             print(f"## Warning: Could not load user-agents from {user_agents_file}")
             return None
@@ -157,7 +161,11 @@ def get_random_proxy():
         proxies_file = _read_resource_file('proxies.txt')
         try:
             with open(proxies_file, 'r', encoding='UTF-8') as f:
-                _proxies_cache = [line.strip() for line in f if line.strip()]
+                _proxies_cache = [
+                    line.strip()
+                    for line in f
+                    if line.strip() and not line.strip().startswith('#')
+                ]
         except IOError:
             print(f"## Warning: Could not load proxies from {proxies_file}")
             return None

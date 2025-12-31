@@ -5,6 +5,14 @@ import networkx as nx  # type: ignore
 from pyvis.network import Network  # type: ignore
 
 MAX_IN_DEGREE = 50
+RESOURCE_COLORS = {
+    "images": "#7cb5ec",
+    "scripts": "#f7a35c",
+    "telephones": "#90ed7d",
+    "emails": "#f45b5b",
+    "external_links": "#8085e9",
+    "files": "#91e8e1",
+}
 
 
 def export_visualization(export_path, prefix, start_url, verbose=False):
@@ -21,6 +29,11 @@ def export_visualization(export_path, prefix, start_url, verbose=False):
         nodes = cur.fetchall()
         cur.execute("SELECT from_url, to_url FROM edges;")
         edges = cur.fetchall()
+        try:
+            cur.execute("SELECT category, from_url, value FROM resources;")
+            resources = cur.fetchall()
+        except sqlite3.OperationalError:
+            resources = []
     finally:
         conn.close()
 
@@ -57,7 +70,7 @@ def export_visualization(export_path, prefix, start_url, verbose=False):
         bgcolor="#222222",
         font_color="white",
         filter_menu=False,
-        cdn_resources="remote",
+        cdn_resources="remote"
     )
     net.from_nx(tree)
     net.set_options("""
@@ -88,13 +101,33 @@ def export_visualization(export_path, prefix, start_url, verbose=False):
     }
     """)
 
+    # Add resource nodes under each page node
+    for category, from_url, value in resources:
+        if from_url not in tree:
+            continue
+        res_id = f"{category}|{from_url}|{value}"
+        res_label = value
+        level = tree.nodes[from_url].get("level", 0) + 1
+        res_color = RESOURCE_COLORS.get(category, "#cccccc")
+        net.add_node(
+            res_id,
+            label=res_label,
+            title=f"{category}: {value}",
+            level=level,
+            color=res_color,
+            shape="dot",
+            size=12,
+        )
+        net.add_edge(from_url, res_id, color=res_color, arrows="to")
+
     for node in net.nodes:
         url = node.get("id")
-        title = node.get("title") or url
-        level = tree.nodes[url].get("level", 0)
-        node["label"] = node["label"] if level <= 1 else ""
-        node["title"] = f"{title} <br/> {url}" if url else title
-        node["size"] = 10 + tree.out_degree(url) * 2
+        if url in tree:
+            title = node.get("title") or url
+            level = tree.nodes[url].get("level", 0)
+            node["label"] = node["label"] if level <= 1 else ""
+            node["title"] = f"{title}\n{url}" if url else title
+            node["size"] = 10 + tree.out_degree(url) * 2
 
     for edge in net.edges:
         edge["color"] = "rgba(150,150,150,0.15)"

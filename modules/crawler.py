@@ -7,6 +7,7 @@ import datetime
 import time
 import urllib.request
 from urllib.parse import urlparse, urljoin
+from collections import defaultdict
 from urllib.error import HTTPError, URLError
 
 from bs4 import BeautifulSoup
@@ -55,6 +56,14 @@ class Crawler:
             "emails": set(),
             "files": set(),
         }
+        self.resources = {
+            "external_links": defaultdict(set),
+            "images": defaultdict(set),
+            "scripts": defaultdict(set),
+            "telephones": defaultdict(set),
+            "emails": defaultdict(set),
+            "files": defaultdict(set),
+        }
         self.edges = set()
         self.titles = {}
 
@@ -84,13 +93,14 @@ class Crawler:
 
         return compiled_patterns
 
-    def excludes(self, link):
+    def excludes(self, link, source_url=None):
         """ Excludes links that are not required.
 
         :param link: String
         :return: Boolean
         """
         now = self.timestamp
+        source = source_url or self.website
 
         # Normalize domain comparison for absolute links to treat same-domain (with/without www)
         same_domain = False
@@ -115,18 +125,21 @@ class Crawler:
             img_path = self.out_path + '/' + now + '_images.txt'
             self._log_once("images", link, img_path)
             self.findings["images"].add(str(link))
+            self.resources["images"][source].add(str(link))
             return True
         # Script links (log separately only)
         elif re.search('^.*\\.(js|mjs|ts|jsx|tsx)$', link, re.IGNORECASE):
             script_path = self.out_path + '/' + now + '_scripts.txt'
             self._log_once("scripts", link, script_path)
             self.findings["scripts"].add(str(link))
+            self.resources["scripts"][source].add(str(link))
             return True
         # External links
         elif link.startswith('http') and not same_domain:
             file_path = self.out_path + '/' + now + '_ext-links.txt'
             self._log_once("external_links", link, file_path)
             self.findings["external_links"].add(str(link))
+            self.resources["external_links"][source].add(str(link))
             return True
         # Telephone Number
         elif link.startswith('tel:'):
@@ -134,6 +147,7 @@ class Crawler:
             file_path = self.out_path + '/' + now + '_telephones.txt'
             self._log_once("telephones", link, file_path)
             self.findings["telephones"].add(str(link))
+            self.resources["telephones"][source].add(str(link))
             return True
         # Mails
         elif link.startswith('mailto:'):
@@ -141,6 +155,7 @@ class Crawler:
             file_path = self.out_path + '/' + now + '_mails.txt'
             self._log_once("emails", link, file_path)
             self.findings["emails"].add(str(link))
+            self.resources["emails"][source].add(str(link))
             return True
         # Other files
         elif re.search('^.*\\.(pdf|doc)$', link, re.IGNORECASE):
@@ -284,7 +299,7 @@ class Crawler:
                 for link in soup.find_all('a'):
                     link = link.get('href')
 
-                    if self.excludes(link):
+                    if self.excludes(link, source_url):
                         continue
 
                     ver_link = self.canonical(link)
@@ -296,7 +311,7 @@ class Crawler:
                 for link in soup.find_all('area'):
                     link = link.get('href')
 
-                    if self.excludes(link):
+                    if self.excludes(link, source_url):
                         continue
 
                     ver_link = self.canonical(link)
@@ -316,7 +331,7 @@ class Crawler:
                         link = match.group(0).rstrip('),.;\'"')
                         if link.startswith('www.'):
                             link = f"https://{link}"
-                        if self.excludes(link):
+                        if self.excludes(link, source_url):
                             continue
                         ver_link = self.canonical(link)
                         if ver_link is not None:
@@ -406,4 +421,6 @@ class Crawler:
             "data": self._serialized_findings(),
             "edges": set(self.edges),
             "titles": dict(self.titles),
+            "resources": {cat: {src: sorted(vals) for src, vals in sources.items()}
+                          for cat, sources in self.resources.items()},
         }

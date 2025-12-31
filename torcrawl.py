@@ -310,7 +310,7 @@ def main():
         if args.xml_export:
             export_xml(output_folder, results_prefix, payload["data"], verbose=args.verbose)
         if args.database_export:
-            export_database(output_folder, results_prefix, payload["data"], payload["edges"], payload["titles"], verbose=args.verbose)
+            export_database(output_folder, results_prefix, payload["data"], payload["edges"], payload["titles"], payload["resources"], verbose=args.verbose)
         if args.visualization:
             export_visualization(output_folder, results_prefix, payload["start_url"], verbose=args.verbose)
     else:

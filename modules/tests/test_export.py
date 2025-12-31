@@ -78,7 +78,7 @@ class TestExportFunctions(unittest.TestCase):
         self.crawler.titles["https://torcrawl.com/about"] = "About"
 
         payload = self.crawler.export_payload()
-        export_database(self.out_path, prefix, payload["data"], payload["edges"], payload["titles"], verbose=False)
+        export_database(self.out_path, prefix, payload["data"], payload["edges"], payload["titles"], payload["resources"], verbose=False)
 
         db_path = os.path.join(self.out_path, f"{prefix}.db")
         self.assertTrue(os.path.exists(db_path))

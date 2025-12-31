@@ -43,7 +43,7 @@ def export_xml(export_path, prefix, data, verbose=False):
     return xml_path
 
 
-def export_database(export_path, prefix, data, edges, titles, verbose=False):
+def export_database(export_path, prefix, data, edges, titles, resources=None, verbose=False):
     db_path = os.path.join(export_path, f"{prefix}.db")
 
     nodes = set(data.get("links", []))
@@ -66,6 +66,14 @@ def export_database(export_path, prefix, data, edges, titles, verbose=False):
                 to_url TEXT
             );
         """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS resources (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category TEXT,
+                from_url TEXT,
+                value TEXT
+            );
+        """)
 
         cur.executemany(
             "INSERT OR REPLACE INTO nodes(url, title) VALUES(?, ?);",
@@ -76,6 +84,19 @@ def export_database(export_path, prefix, data, edges, titles, verbose=False):
             "INSERT OR IGNORE INTO edges(from_url, to_url) VALUES(?, ?);",
             list(edges)
         )
+        
+        # Resources
+        res_payload = resources if resources is not None else data.get("resources", {})
+        res_rows = []
+        for category, mapping in res_payload.items():
+            for from_url, values in mapping.items():
+                for val in values:
+                    res_rows.append((category, from_url, val))
+        if res_rows:
+            cur.executemany(
+                "INSERT OR IGNORE INTO resources(category, from_url, value) VALUES(?, ?, ?);",
+                res_rows
+            )
         conn.commit()
         if verbose:
             print(f"## SQLite results created at: {db_path}")

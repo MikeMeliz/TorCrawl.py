@@ -6,11 +6,8 @@ import sys
 import datetime
 import time
 import urllib.request
-from urllib.error import HTTPError, URLError
-import json
-import xml.etree.ElementTree as ET
-import sqlite3
 from urllib.parse import urlparse
+from urllib.error import HTTPError, URLError
 
 from bs4 import BeautifulSoup
 from modules.checker import get_random_user_agent
@@ -48,6 +45,7 @@ class Crawler:
             "emails": set(),
             "files": set(),
         }
+        self.normalized_links = set()
         self.edges = set()
         self.titles = {}
 
@@ -85,14 +83,14 @@ class Crawler:
         """
         now = self.timestamp
 
-        # Normalize domain comparison for absolute links to avoid excluding same-domain without www
+        # Normalize domain comparison for absolute links to treat same-domain (with/without www)
+        same_domain = False
         if isinstance(link, str) and link.startswith(('http://', 'https://')):
             try:
                 parsed = urlparse(link)
                 netloc = parsed.netloc.lower()
                 candidate_domain = netloc[4:] if netloc.startswith("www.") else netloc
-                if candidate_domain == self.base_domain:
-                    return False
+                same_domain = candidate_domain == self.base_domain
             except ValueError:
                 # Malformed URL; let the regular exclusion rules handle (or skip)
                 return True
@@ -128,7 +126,7 @@ class Crawler:
                 self.findings["external_links"].add(str(link))
             return True
         # External links
-        elif link.startswith('http') and not link.startswith(self.website):
+        elif link.startswith('http') and not same_domain:
             file_path = self.out_path + '/' + now + '_ext-links.txt'
             with open(file_path, 'a+', encoding='UTF-8') as lst_file:
                 lst_file.write(str(link) + '\n')
@@ -234,6 +232,7 @@ class Crawler:
         ord_lst = []
         ord_lst.insert(0, self.website)
         self.findings["links"].add(self.website)
+        self.normalized_links.add(self._normalize_for_dedupe(self.website))
         ord_lst_ind = 0
 
         print(f"## Crawler started from {self.website} with "
@@ -297,8 +296,7 @@ class Crawler:
 
                     ver_link = self.canonical(link)
                     if ver_link is not None:
-                        lst.add(ver_link)
-                        self.findings["links"].add(ver_link)
+                        self._add_link(ver_link, source_url, lst)
                         self.edges.add((source_url, ver_link))
 
                 # For each <area> tag.
@@ -310,8 +308,7 @@ class Crawler:
 
                     ver_link = self.canonical(link)
                     if ver_link is not None:
-                        lst.add(ver_link)
-                        self.findings["links"].add(ver_link)
+                        self._add_link(ver_link, source_url, lst)
                         self.edges.add((source_url, ver_link))
 
                 # Additional regex sweep for links not inside <a> or <area> tags.
@@ -330,8 +327,7 @@ class Crawler:
                             continue
                         ver_link = self.canonical(link)
                         if ver_link is not None:
-                            lst.add(ver_link)
-                            self.findings["links"].add(ver_link)
+                            self._add_link(ver_link, source_url, lst)
                             self.edges.add((source_url, ver_link))
 
                 # Pass new on list and re-set it to delete duplicates.
@@ -369,154 +365,33 @@ class Crawler:
             "files": sorted(self.findings["files"]),
         }
 
-    def _build_xml_tree(self, data):
-        """Build XML tree from findings data."""
-        root = ET.Element("crawl", start_url=data.get("start_url", ""))
-        tag_map = {
-            "links": "link",
-            "external_links": "external_link",
-            "images": "image",
-            "scripts": "script",
-            "telephones": "telephone",
-            "emails": "email",
-            "files": "file",
-        }
-
-        for section, child_tag in tag_map.items():
-            section_el = ET.SubElement(root, section)
-            for item in data.get(section, []):
-                child = ET.SubElement(section_el, child_tag)
-                child.text = item
-        return root
-
-    def export_findings(self, export_path, prefix, export_json=False, export_xml=False):
-        """Export findings to JSON and/or XML while keeping txt outputs intact."""
-        data = self._serialized_findings()
-
-        if export_json:
-            json_path = os.path.join(export_path, f"{prefix}.json")
-            with open(json_path, "w", encoding="UTF-8") as json_file:
-                json.dump(data, json_file, indent=2, ensure_ascii=False)
-            if self.verbose:
-                print(f"## JSON results created at: {json_path}")
-
-        if export_xml:
-            xml_path = os.path.join(export_path, f"{prefix}.xml")
-            root = self._build_xml_tree(data)
-            tree = ET.ElementTree(root)
-            tree.write(xml_path, encoding="UTF-8", xml_declaration=True)
-            if self.verbose:
-                print(f"## XML results created at: {xml_path}")
-
-    def export_database(self, export_path, prefix):
-        """Export findings and link relationships to SQLite database."""
-        db_path = os.path.join(export_path, f"{prefix}.db")
-        data = self._serialized_findings()
-
-        nodes = set(data["links"])
-        nodes.update([edge[0] for edge in self.edges])
-        nodes.update([edge[1] for edge in self.edges])
-
-        conn = sqlite3.connect(db_path)
+    def _normalize_for_dedupe(self, url):
+        """Normalize URL for deduplication: lower-case host, strip leading www."""
         try:
-            cur = conn.cursor()
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS nodes (
-                    url TEXT PRIMARY KEY,
-                    title TEXT
-                );
-            """)
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS edges (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    from_url TEXT,
-                    to_url TEXT
-                );
-            """)
+            parsed = urlparse(url)
+            netloc = parsed.netloc.lower()
+            netloc = netloc[4:] if netloc.startswith("www.") else netloc
+            normalized = parsed._replace(netloc=netloc).geturl()
+            return normalized
+        except ValueError:
+            return url.strip().lower()
 
-            cur.executemany(
-                "INSERT OR REPLACE INTO nodes(url, title) VALUES(?, ?);",
-                [(url, self.titles.get(url)) for url in nodes]
-            )
+    def _add_link(self, ver_link, source_url, lst):
+        """Add link to collections with deduplication by normalized host."""
+        norm = self._normalize_for_dedupe(ver_link)
+        if norm not in self.normalized_links:
+            self.normalized_links.add(norm)
+            lst.add(ver_link)
+            self.findings["links"].add(ver_link)
+        # Always record edge relationships, even if link already known
+        if source_url and ver_link:
+            self.edges.add((source_url, ver_link))
 
-            cur.executemany(
-                "INSERT OR IGNORE INTO edges(from_url, to_url) VALUES(?, ?);",
-                list(self.edges)
-            )
-            conn.commit()
-            if self.verbose:
-                print(f"## SQLite results created at: {db_path}")
-        finally:
-            conn.close()
-
-    def export_visualization(self, export_path, prefix):
-        """Generate an HTML visualization from the SQLite database using NetworkX and PyVis."""
-        db_path = os.path.join(export_path, f"{prefix}.db")
-        if not os.path.exists(db_path):
-            print("## Visualization skipped: database not found. Use --database (-DB).")
-            return
-
-        # Load nodes and edges from database
-        conn = sqlite3.connect(db_path)
-        try:
-            cur = conn.cursor()
-            cur.execute("SELECT url, title FROM nodes;")
-            nodes = cur.fetchall()
-            cur.execute("SELECT from_url, to_url FROM edges;")
-            edges = cur.fetchall()
-        finally:
-            conn.close()
-
-        import networkx as nx  # type: ignore
-        from pyvis.network import Network  # type: ignore
-
-        graph = nx.DiGraph()
-        for url, title in nodes:
-            graph.add_node(url, title=title or url, label=title or url)
-        for src, dst in edges:
-            if src and dst:
-                graph.add_edge(src, dst, title=f"{src} -> {dst}")
-
-        net = Network(
-            height="750px",
-            width="100%",
-            directed=True,
-            notebook=False,
-            bgcolor="#222222",
-            font_color="white",
-            filter_menu=False,
-            cdn_resources="remote",
-        )
-        net.from_nx(graph)
-        net.set_options("""
-        {
-          "physics": {
-            "enabled": true
-          },
-          "layout": {
-            "improvedLayout": true,
-            "hierarchical": {
-              "enabled": true,
-              "sortMethod": "hubsize",
-              "direction": "LR",
-              "shakeTowards": "roots"
-            }
-          },
-          "interaction": {
-            "hover": true
-          }
+    def export_payload(self):
+        """Return data needed for downstream exporters/visualization."""
+        return {
+            "start_url": self.website,
+            "data": self._serialized_findings(),
+            "edges": set(self.edges),
+            "titles": dict(self.titles),
         }
-        """)
-
-        # Ensure labels: keep root label, hide others, but preserve hover (title) with page title + URL
-        for node in net.nodes:
-            url = node.get("id")
-            title = node.get("title") or url
-            is_root = url == self.website
-            node["label"] = title if is_root else ""
-            node["title"] = f"{title}<br/>{url}" if url else title
-
-        html_path = os.path.join(export_path, f"{prefix}_graph.html")
-        net.write_html(html_path)
-        if self.verbose:
-            print(f"## Visualization created at: {html_path}")

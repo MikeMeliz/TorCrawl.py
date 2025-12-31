@@ -1,0 +1,86 @@
+import os
+import json
+import sqlite3
+import xml.etree.ElementTree as ET
+
+
+def _build_xml_tree(data):
+    root = ET.Element("crawl", start_url=data.get("start_url", ""))
+    tag_map = {
+        "links": "link",
+        "external_links": "external_link",
+        "images": "image",
+        "scripts": "script",
+        "telephones": "telephone",
+        "emails": "email",
+        "files": "file",
+    }
+
+    for section, child_tag in tag_map.items():
+        section_el = ET.SubElement(root, section)
+        for item in data.get(section, []):
+            child = ET.SubElement(section_el, child_tag)
+            child.text = item
+    return root
+
+
+def export_json(export_path, prefix, data, verbose=False):
+    json_path = os.path.join(export_path, f"{prefix}.json")
+    with open(json_path, "w", encoding="UTF-8") as json_file:
+        json.dump(data, json_file, indent=2, ensure_ascii=False)
+    if verbose:
+        print(f"## JSON results created at: {json_path}")
+    return json_path
+
+
+def export_xml(export_path, prefix, data, verbose=False):
+    xml_path = os.path.join(export_path, f"{prefix}.xml")
+    root = _build_xml_tree(data)
+    tree = ET.ElementTree(root)
+    tree.write(xml_path, encoding="UTF-8", xml_declaration=True)
+    if verbose:
+        print(f"## XML results created at: {xml_path}")
+    return xml_path
+
+
+def export_database(export_path, prefix, data, edges, titles, verbose=False):
+    db_path = os.path.join(export_path, f"{prefix}.db")
+
+    nodes = set(data.get("links", []))
+    nodes.update([edge[0] for edge in edges])
+    nodes.update([edge[1] for edge in edges])
+
+    conn = sqlite3.connect(db_path)
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS nodes (
+                url TEXT PRIMARY KEY,
+                title TEXT
+            );
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS edges (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                from_url TEXT,
+                to_url TEXT
+            );
+        """)
+
+        cur.executemany(
+            "INSERT OR REPLACE INTO nodes(url, title) VALUES(?, ?);",
+            [(url, titles.get(url)) for url in nodes]
+        )
+
+        cur.executemany(
+            "INSERT OR IGNORE INTO edges(from_url, to_url) VALUES(?, ?);",
+            list(edges)
+        )
+        conn.commit()
+        if verbose:
+            print(f"## SQLite results created at: {db_path}")
+    finally:
+        conn.close()
+
+    return db_path
+

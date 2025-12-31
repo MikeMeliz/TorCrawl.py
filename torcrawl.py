@@ -62,6 +62,8 @@ from modules.checker import url_canon
 # TorCrawl Modules
 from modules.crawler import Crawler
 from modules.extractor import extractor
+from modules.export import export_json, export_xml, export_database
+from modules.visualization import export_visualization
 
 __version__ = "1.34"
 
@@ -301,23 +303,16 @@ def main():
             extractor(website, args.crawl, output_file, input_file, output_folder,
                       selection_yara, random_ua, random_proxy)
 
-        if args.json_export or args.xml_export:
-            crawler.export_findings(
-                output_folder,
-                results_prefix,
-                export_json=args.json_export,
-                export_xml=args.xml_export
-            )
+        payload = crawler.export_payload()
+
+        if args.json_export:
+            export_json(output_folder, results_prefix, payload["data"], verbose=args.verbose)
+        if args.xml_export:
+            export_xml(output_folder, results_prefix, payload["data"], verbose=args.verbose)
         if args.database_export:
-            crawler.export_database(
-                output_folder,
-                results_prefix
-            )
+            export_database(output_folder, results_prefix, payload["data"], payload["edges"], payload["titles"], verbose=args.verbose)
         if args.visualization:
-            crawler.export_visualization(
-                output_folder,
-                results_prefix
-            )
+            export_visualization(output_folder, results_prefix, payload["start_url"], verbose=args.verbose)
     else:
         extractor(website, args.crawl, output_file, input_file, output_folder,
                   selection_yara, random_ua, random_proxy)

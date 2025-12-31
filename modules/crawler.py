@@ -6,7 +6,7 @@ import sys
 import datetime
 import time
 import urllib.request
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 from urllib.error import HTTPError, URLError
 
 from bs4 import BeautifulSoup
@@ -180,15 +180,13 @@ class Crawler:
             else:
                 final_link = self.website + link
             return final_link
-        # For relative paths without /
-        elif re.search('^.*\\.(html|htm|aspx|php|doc|css|js|less)$', link,
-                       re.IGNORECASE):
-            # Pass to
-            if self.website[-1] == '/':
-                final_link = self.website + link
-            else:
-                final_link = self.website + "/" + link
-            return final_link
+        # For relative paths without leading slash (e.g., "about", "services/", "?q=1")
+        elif not link.startswith('http') and not link.startswith('//'):
+            return urljoin(self.website if self.website.endswith('/') else self.website + '/', link)
+        # Protocol-relative URLs
+        elif link.startswith('//'):
+            parsed_base = urlparse(self.website)
+            return f"{parsed_base.scheme}:{link}"
 
     def write_log(self, log):
         log_path = self.out_path + '/crawler.log'

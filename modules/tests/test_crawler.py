@@ -50,7 +50,9 @@ class TestCrawlerFunctions(unittest.TestCase):
         links = [[f'{_uri}sundance', f'{_uri}sundance'],
                  ['/sundance', f'{_uri}sundance'],
                  [f'{_uri}bob.html', f'{_uri}bob.html'],
-                 [f'bob.html', f'{_uri}bob.html']]
+                 [f'bob.html', f'{_uri}bob.html'],
+                 ['about', f'{_uri}about'],
+                 ['services/', f'{_uri}services/']]
 
         for link in links:
             result = self.crawler.canonical(link[0])

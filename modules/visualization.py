@@ -4,6 +4,8 @@ import sqlite3
 import networkx as nx  # type: ignore
 from pyvis.network import Network  # type: ignore
 
+MAX_IN_DEGREE = 50
+
 
 def export_visualization(export_path, prefix, start_url, verbose=False):
     """Generate an HTML visualization from the SQLite database using NetworkX and PyVis."""
@@ -29,13 +31,23 @@ def export_visualization(export_path, prefix, start_url, verbose=False):
         if src and dst:
             graph.add_edge(src, dst, title=f"{src} -> {dst}")
 
+    # Remove very high in-degree nodes to keep layout readable/performance sane.
+    indegrees = dict(graph.in_degree())
+    to_remove = [n for n, deg in indegrees.items() if deg > MAX_IN_DEGREE and n != start_url]
+    if to_remove:
+        graph.remove_nodes_from(to_remove)
+
+    # Build BFS tree from start_url (one parent per node)
     try:
-        shortest = dict(nx.single_source_shortest_path_length(graph, start_url))
+        tree = nx.bfs_tree(graph, start_url)
     except Exception:
-        shortest = {}
-    for node in graph.nodes:
-        graph.nodes[node]["level"] = shortest.get(node, 0)
-        graph.nodes[node]["value"] = 1
+        tree = graph.copy()
+
+    # Assign levels (depth)
+    levels = nx.single_source_shortest_path_length(tree, start_url) if tree else {}
+    for node, level in levels.items():
+        tree.nodes[node]["level"] = level
+        tree.nodes[node]["value"] = 1
 
     net = Network(
         height="750px",
@@ -47,33 +59,29 @@ def export_visualization(export_path, prefix, start_url, verbose=False):
         filter_menu=False,
         cdn_resources="remote",
     )
-    net.from_nx(graph)
+    net.from_nx(tree)
     net.set_options("""
     {
       "physics": {
         "enabled": false
       },
+      "layout": {
+        "hierarchical": {
+          "enabled": true,
+          "direction": "UD",
+          "sortMethod": "directed",
+          "nodeSpacing": 180,
+          "treeSpacing": 240,
+          "levelSeparation": 200,
+          "edgeMinimization": true,
+          "blockShifting": true,
+          "parentCentralization": true
+        }
+      },
       "edges": {
         "smooth": false
       },
-      "layout": {
-        "improvedLayout": true,
-        "hierarchical": {
-          "enabled": true,
-          "sortMethod": "directed",
-          "direction": "LR",
-          "shakeTowards": "roots",
-          "nodeSpacing": 180,
-          "treeSpacing": 260,
-          "blockShifting": true,
-          "edgeMinimization": true,
-          "parentCentralization": true,
-          "spacingFactor": 1.2
-        }
-      },
       "interaction": {
-        "hover": true,
-        "navigationButtons": false,
         "dragNodes": false,
         "zoomView": true
       }
@@ -83,9 +91,10 @@ def export_visualization(export_path, prefix, start_url, verbose=False):
     for node in net.nodes:
         url = node.get("id")
         title = node.get("title") or url
-        is_root = url == start_url
-        node["label"] = title if is_root else ""
+        level = tree.nodes[url].get("level", 0)
+        node["label"] = node["label"] if level <= 1 else ""
         node["title"] = f"{title} <br/> {url}" if url else title
+        node["size"] = 10 + tree.out_degree(url) * 2
 
     for edge in net.edges:
         edge["color"] = "rgba(150,150,150,0.15)"

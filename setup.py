@@ -7,7 +7,7 @@ long_description = (this_directory / "README.md").read_text(encoding='utf-8')
 
 setup(
     name='torcrawl',
-    version='1.34',
+    version='1.35',
     description='A Python script to crawl and extract (regular or onion) webpages through TOR network.',
     long_description=long_description,
     long_description_content_type='text/markdown',

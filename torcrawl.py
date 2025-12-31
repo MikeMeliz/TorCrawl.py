@@ -65,7 +65,7 @@ from modules.extractor import extractor
 from modules.export import export_json, export_xml, export_database
 from modules.visualization import export_visualization
 
-__version__ = "1.34"
+__version__ = "1.35"
 
 
 # Set socket and connection with TOR network

@@ -228,6 +228,10 @@ Feel free to contribute on this project! Just fork it, make any change on your f
 
 ## Changelog
 ```shell
+v1.35:
+    * Introduced visualization (with PyVis)
+    * Ability to export in .JSON and .XML
+    * Export into SQLite3 with links between URLs
 v1.34:
     * Readiness for PyPi and Homebrew
     * Added --version argument

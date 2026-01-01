@@ -50,18 +50,6 @@ def export_visualization(export_path, prefix, start_url, verbose=False):
     if to_remove:
         graph.remove_nodes_from(to_remove)
 
-    # Build BFS tree from start_url (one parent per node)
-    try:
-        tree = nx.bfs_tree(graph, start_url)
-    except Exception:
-        tree = graph.copy()
-
-    # Assign levels (depth)
-    levels = nx.single_source_shortest_path_length(tree, start_url) if tree else {}
-    for node, level in levels.items():
-        tree.nodes[node]["level"] = level
-        tree.nodes[node]["value"] = 1
-
     net = Network(
         height="750px",
         width="100%",
@@ -69,33 +57,35 @@ def export_visualization(export_path, prefix, start_url, verbose=False):
         notebook=False,
         bgcolor="#222222",
         font_color="white",
-        filter_menu=False,
+        filter_menu=True,
         cdn_resources="remote"
     )
-    net.from_nx(tree)
+    net.from_nx(graph)
     net.set_options("""
     {
       "physics": {
-        "enabled": false
-      },
-      "layout": {
-        "hierarchical": {
-          "enabled": true,
-          "direction": "UD",
-          "sortMethod": "directed",
-          "nodeSpacing": 180,
-          "treeSpacing": 240,
-          "levelSeparation": 200,
-          "edgeMinimization": true,
-          "blockShifting": true,
-          "parentCentralization": true
+        "enabled": true,
+        "barnesHut": {
+          "gravitationalConstant": -30000,
+          "centralGravity": 0.25,
+          "springLength": 130,
+          "springConstant": 0.04,
+          "damping": 0.85,
+          "avoidOverlap": 1
+        },
+        "stabilization": {
+          "iterations": 300
         }
       },
       "edges": {
-        "smooth": false
+        "smooth": false,
+        "color": {
+          "color": "rgba(180,180,180,0.15)"
+        }
       },
       "interaction": {
-        "dragNodes": false,
+        "hover": true,
+        "dragNodes": true,
         "zoomView": true
       }
     }
@@ -103,34 +93,52 @@ def export_visualization(export_path, prefix, start_url, verbose=False):
 
     # Add resource nodes under each page node
     for category, from_url, value in resources:
-        if from_url not in tree:
+        if from_url not in graph:
             continue
         res_id = f"{category}|{from_url}|{value}"
         res_label = value
-        level = tree.nodes[from_url].get("level", 0) + 1
         res_color = RESOURCE_COLORS.get(category, "#cccccc")
         net.add_node(
             res_id,
             label=res_label,
-            title=f"{category}: {value}",
-            level=level,
+            title="-",  # no title for resource nodes
             color=res_color,
             shape="dot",
             size=12,
+            type=category,
+            url_value=value,
         )
         net.add_edge(from_url, res_id, color=res_color, arrows="to")
 
+    degrees = dict(graph.degree())
+    out_degrees = dict(graph.out_degree())
+    try:
+        levels = nx.single_source_shortest_path_length(graph, start_url)
+    except Exception:
+        levels = {}
+
     for node in net.nodes:
         url = node.get("id")
-        if url in tree:
-            title = node.get("title") or url
-            level = tree.nodes[url].get("level", 0)
-            node["label"] = node["label"] if level <= 1 else ""
-            node["title"] = f"{title}\n{url}" if url else title
-            node["size"] = 10 + tree.out_degree(url) * 2
+        type_val = node.get("type")
+        is_page = url in graph
+        level_val = levels.get(url) if is_page else None
+        links_out_val = out_degrees.get(url) if is_page else None
+        url_value = node.get("url_value") if not is_page else url
+        title_val = node.get("title") if is_page else "-"
 
-    for edge in net.edges:
-        edge["color"] = "rgba(150,150,150,0.15)"
+        node["label"] = ""
+        node["title"] = (
+            f"Title: {title_val or '-'}\n"
+            f"URL: {url_value or '-'}\n"
+            f"Type: {type_val or ('page' if is_page else 'resource')}\n"
+            f"Depth: {level_val if level_val is not None else '-'}\n"
+            f"Links out: {links_out_val if links_out_val is not None else '-'}"
+        )
+        node["size"] = min(8 + degrees.get(url, 0) * 1.5, 40)
+        node["type"] = node.get("type") or ("page" if is_page else "resource")
+        if url == start_url:
+            node["size"] = 50
+            node["color"] = "#ffcc00"
 
     html_path = os.path.join(export_path, f"{prefix}_graph.html")
     net.write_html(html_path)

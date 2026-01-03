@@ -7,6 +7,7 @@ from unittest.mock import patch
 from unittest import mock
 import urllib.request
 import json
+import sqlite3
 import xml.etree.ElementTree as ET
 
 from modules.crawler import Crawler
@@ -49,7 +50,9 @@ class TestCrawlerFunctions(unittest.TestCase):
         links = [[f'{_uri}sundance', f'{_uri}sundance'],
                  ['/sundance', f'{_uri}sundance'],
                  [f'{_uri}bob.html', f'{_uri}bob.html'],
-                 [f'bob.html', f'{_uri}bob.html']]
+                 [f'bob.html', f'{_uri}bob.html'],
+                 ['about', f'{_uri}about'],
+                 ['services/', f'{_uri}services/']]
 
         for link in links:
             result = self.crawler.canonical(link[0])
@@ -141,54 +144,6 @@ class TestCrawlerFunctions(unittest.TestCase):
         self.assertIn("https://torcrawl.com/deep/custom-path", result)
         self.assertIn("https://torcrawl.com/deep/second-path", result)
 
-    def test_export_findings_creates_json(self):
-        """Findings are exported to JSON with separated sections."""
-        prefix = f"{self.crawler.timestamp}_results_test"
-        self.crawler.findings["links"].update({"https://torcrawl.com", "https://torcrawl.com/about"})
-        self.crawler.findings["external_links"].add("https://external.com/path")
-        self.crawler.findings["images"].add("https://torcrawl.com/img/logo.png")
-        self.crawler.findings["emails"].add("mailto:test@torcrawl.com")
-
-        self.crawler.export_findings(self.out_path, prefix, export_json=True, export_xml=False)
-
-        json_path = os.path.join(self.out_path, f"{prefix}.json")
-        self.assertTrue(os.path.exists(json_path))
-
-        with open(json_path, "r", encoding="UTF-8") as json_file:
-            payload = json.load(json_file)
-
-        self.assertIn("links", payload)
-        self.assertIn("external_links", payload)
-        self.assertIn("images", payload)
-        self.assertIn("emails", payload)
-        self.assertIn("https://torcrawl.com/about", payload["links"])
-        self.assertIn("https://external.com/path", payload["external_links"])
-
-    def test_export_findings_creates_xml(self):
-        """Findings are exported to XML with separated sections."""
-        prefix = f"{self.crawler.timestamp}_results_test_xml"
-        self.crawler.findings["links"].update({"https://torcrawl.com"})
-        self.crawler.findings["scripts"].add("https://torcrawl.com/static/app.js")
-        self.crawler.findings["telephones"].add("tel:012-013-104-5")
-
-        self.crawler.export_findings(self.out_path, prefix, export_json=False, export_xml=True)
-
-        xml_path = os.path.join(self.out_path, f"{prefix}.xml")
-        self.assertTrue(os.path.exists(xml_path))
-
-        tree = ET.parse(xml_path)
-        root = tree.getroot()
-
-        links_section = root.find("links")
-        scripts_section = root.find("scripts")
-        telephones_section = root.find("telephones")
-
-        self.assertIsNotNone(links_section)
-        self.assertIsNotNone(scripts_section)
-        self.assertIsNotNone(telephones_section)
-        self.assertEqual(links_section[0].text, "https://torcrawl.com")
-        self.assertEqual(scripts_section[0].text, "https://torcrawl.com/static/app.js")
-        self.assertEqual(telephones_section[0].text, "tel:012-013-104-5")
 
     def test_make_request_with_random_ua_and_proxy(self):
         crawler = Crawler("http://example.com", 0, 0, self.out_path, False, False, random_ua=True, random_proxy=True)

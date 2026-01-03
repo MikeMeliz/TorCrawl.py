@@ -173,7 +173,7 @@ class TestCheckFunctions(unittest.TestCase):
         # Check if file exists and has content
         if os.path.exists(proxies_file):
             with open(proxies_file, 'r', encoding='UTF-8') as f:
-                has_proxies = bool([line.strip() for line in f if line.strip()])
+                has_proxies = bool([line.strip() for line in f if line.strip() and not line.strip().startswith('#')])
             
             if has_proxies:
                 result = get_random_proxy()
@@ -197,7 +197,7 @@ class TestCheckFunctions(unittest.TestCase):
         
         if os.path.exists(proxies_file):
             with open(proxies_file, 'r', encoding='UTF-8') as f:
-                proxy_count = len([line.strip() for line in f if line.strip()])
+                proxy_count = len([line.strip() for line in f if line.strip() and not line.strip().startswith('#')])
             
             if proxy_count > 1:
                 results = []
@@ -222,7 +222,7 @@ class TestCheckFunctions(unittest.TestCase):
         
         if os.path.exists(proxies_file):
             with open(proxies_file, 'r', encoding='UTF-8') as f:
-                has_proxies = bool([line.strip() for line in f if line.strip()])
+                has_proxies = bool([line.strip() for line in f if line.strip() and not line.strip().startswith('#')])
             
             if has_proxies:
                 result = get_random_proxy()

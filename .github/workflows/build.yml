@@ -1,4 +1,4 @@
-name: Build & Scan
+name: SonarQube Cloud Analysis
 on:
   push:
     branches:

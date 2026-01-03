@@ -7,7 +7,7 @@ long_description = (this_directory / "README.md").read_text(encoding='utf-8')
 
 setup(
     name='torcrawl',
-    version='1.34',
+    version='1.35',
     description='A Python script to crawl and extract (regular or onion) webpages through TOR network.',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -28,9 +28,11 @@ setup(
         'beautifulsoup4>=4.7.1',
         'yara-python',
         'lxml',
+        'networkx',
+        'pyvis',
     ],
     package_data={
-        'res': ['keywords.yar', 'proxies.txt', 'user_agents.txt'],
+        'res': ['keywords.yar', 'proxies.txt', 'user_agents.txt', 'regex_patterns.txt'],
     },
     include_package_data=True,
     entry_points={

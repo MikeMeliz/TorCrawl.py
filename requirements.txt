@@ -2,3 +2,5 @@ pysocks
 beautifulsoup4>=4.7.1
 yara-python
 lxml
+networkx
+pyvis

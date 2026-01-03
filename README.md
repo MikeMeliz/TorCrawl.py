@@ -100,6 +100,8 @@ $ torcrawl -v -u http://www.github.com/ -c -d 2 -p 2
 | -p           | --pause             | Seconds of pause between requests (Default: 0)                                         |
 | -j           | --json              | Export crawl findings to JSON in addition to txt outputs                               |
 | -x           | --xml               | Export crawl findings to XML in addition to txt outputs                                |
+| -DB          | --database          | Export crawl findings and link graph to SQLite database                                |
+| -vis         | --visualization     | Generate HTML visualization from SQLite database (requires -DB)                        |
 | -l           | --log               | Log file with visited URLs and their response code                                     |
 
 ## Usage & Examples
@@ -226,6 +228,10 @@ Feel free to contribute on this project! Just fork it, make any change on your f
 
 ## Changelog
 ```shell
+v1.35:
+    * Introduced visualization (with PyVis)
+    * Ability to export in .JSON and .XML
+    * Export into SQLite3 with links between URLs
 v1.34:
     * Readiness for PyPi and Homebrew
     * Added --version argument

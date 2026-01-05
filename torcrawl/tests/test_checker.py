@@ -4,15 +4,15 @@ import socket
 import unittest
 from unittest import mock
 
-from modules import checker
-from modules.checker import extract_domain
-from modules.checker import folder
-from modules.checker import url_canon
-from modules.checker import get_random_user_agent
-from modules.checker import get_random_proxy
-from modules.checker import check_tor
-from modules.checker import check_ip
-from modules.checker import setup_proxy_connection
+from torcrawl import checker
+from torcrawl.checker import extract_domain
+from torcrawl.checker import folder
+from torcrawl.checker import url_canon
+from torcrawl.checker import get_random_user_agent
+from torcrawl.checker import get_random_proxy
+from torcrawl.checker import check_tor
+from torcrawl.checker import check_ip
+from torcrawl.checker import setup_proxy_connection
 
 
 class TestCheckFunctions(unittest.TestCase):
@@ -255,14 +255,14 @@ class TestCheckFunctions(unittest.TestCase):
 
     def test_check_ip_prints_ip(self):
         fake_response = io.StringIO('{"ip": "1.2.3.4"}')
-        with mock.patch("modules.checker.urlopen", return_value=fake_response), \
-             mock.patch("modules.checker.load", return_value={"ip": "1.2.3.4"}):
+        with mock.patch("torcrawl.checker.urlopen", return_value=fake_response), \
+             mock.patch("torcrawl.checker.load", return_value={"ip": "1.2.3.4"}):
             check_ip()
 
     def test_setup_proxy_connection_invalid_format(self):
         # Should not throw on malformed string
         with mock.patch.dict("sys.modules", {"socks": mock.Mock()}), \
-             mock.patch("modules.checker.socket") as socket_mock:
+             mock.patch("torcrawl.checker.socket") as socket_mock:
             setup_proxy_connection("badformat")
             socket_mock.socket.assert_not_called()
 

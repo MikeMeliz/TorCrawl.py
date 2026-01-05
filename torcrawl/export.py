@@ -5,6 +5,11 @@ import xml.etree.ElementTree as ET
 
 
 def _build_xml_tree(data):
+    """ Build XML tree structure from crawl data.
+
+    :param data: Dict - Crawl data dictionary.
+    :return: Element - XML root element.
+    """
     root = ET.Element("crawl", start_url=data.get("start_url", ""))
     tag_map = {
         "links": "link",
@@ -25,6 +30,14 @@ def _build_xml_tree(data):
 
 
 def export_json(export_path, prefix, data, verbose=False):
+    """ Export crawl findings to JSON file.
+
+    :param export_path: String - Path where JSON file will be saved.
+    :param prefix: String - Prefix for the JSON filename.
+    :param data: Dict - Crawl data to export.
+    :param verbose: Boolean - Whether to print verbose output.
+    :return: String - Path to the created JSON file.
+    """
     json_path = os.path.join(export_path, f"{prefix}.json")
     with open(json_path, "w", encoding="UTF-8") as json_file:
         json.dump(data, json_file, indent=2, ensure_ascii=False)
@@ -34,6 +47,14 @@ def export_json(export_path, prefix, data, verbose=False):
 
 
 def export_xml(export_path, prefix, data, verbose=False):
+    """ Export crawl findings to XML file.
+
+    :param export_path: String - Path where XML file will be saved.
+    :param prefix: String - Prefix for the XML filename.
+    :param data: Dict - Crawl data to export.
+    :param verbose: Boolean - Whether to print verbose output.
+    :return: String - Path to the created XML file.
+    """
     xml_path = os.path.join(export_path, f"{prefix}.xml")
     root = _build_xml_tree(data)
     tree = ET.ElementTree(root)
@@ -44,6 +65,17 @@ def export_xml(export_path, prefix, data, verbose=False):
 
 
 def export_database(export_path, prefix, data, edges, titles, resources=None, verbose=False):
+    """ Export crawl findings and link graph to SQLite database.
+
+    :param export_path: String - Path where database file will be saved.
+    :param prefix: String - Prefix for the database filename.
+    :param data: Dict - Crawl data dictionary.
+    :param edges: Set - Set of tuples (from_url, to_url) representing link relationships.
+    :param titles: Dict - Dictionary mapping URLs to page titles.
+    :param resources: Dict - Dictionary of resources by category and source URL.
+    :param verbose: Boolean - Whether to print verbose output.
+    :return: String - Path to the created database file.
+    """
     db_path = os.path.join(export_path, f"{prefix}.db")
 
     nodes = set(data.get("links", []))

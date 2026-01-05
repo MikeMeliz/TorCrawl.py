@@ -2,10 +2,10 @@ import os
 import shutil
 import unittest
 
-from modules.crawler import Crawler
-from modules.checker import url_canon, extract_domain, folder
-from modules.export import export_database
-from modules.visualization import export_visualization
+from torcrawl.crawler import Crawler
+from torcrawl.checker import url_canon, extract_domain, folder
+from torcrawl.export import export_database
+from torcrawl.visualization import export_visualization
 
 
 class TestVisualization(unittest.TestCase):

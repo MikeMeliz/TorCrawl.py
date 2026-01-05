@@ -8,13 +8,13 @@ long_description = (this_directory / "README.md").read_text(encoding='utf-8')
 setup(
     name='torcrawl',
     version='1.35',
-    description='A Python script to crawl and extract (regular or onion) webpages through TOR network.',
+    description='A Python crawler for regular and onion websites via TOR.',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/MikeMeliz/TorCrawl.py',
     author='MikeMeliz',
     author_email='mike@mikemeliz.com',
-    license='GNU General Public License v3.0',
+    license='GPL-3.0-only',
     keywords='osint, web-scraping, crawler, tor, onion, web-crawler, scraping, anonymous, privacy, security, data-extraction',
     project_urls={
         'Homepage': 'https://github.com/MikeMeliz/TorCrawl.py',
@@ -22,7 +22,7 @@ setup(
         'Issue Tracker': 'https://github.com/MikeMeliz/TorCrawl.py/issues',
     },
     packages=find_packages(),
-    py_modules=['torcrawl'],
+    include_package_data=True,
     install_requires=[
         'pysocks',
         'beautifulsoup4>=4.7.1',
@@ -31,13 +31,9 @@ setup(
         'networkx',
         'pyvis',
     ],
-    package_data={
-        'res': ['keywords.yar', 'proxies.txt', 'user_agents.txt', 'regex_patterns.txt'],
-    },
-    include_package_data=True,
     entry_points={
         'console_scripts': [
-            'torcrawl=torcrawl:main',
+            'torcrawl=torcrawl.cli:main',
         ],
     },
     python_requires='>=3.9',
@@ -49,7 +45,6 @@ setup(
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Other Audience',
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: POSIX :: Linux',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows',

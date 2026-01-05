@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from unittest import mock
 
-import modules.extractor as extractor_mod
-from modules.extractor import (
+import torcrawl.extractor as extractor_mod
+from torcrawl.extractor import (
     text,
     check_yara,
     input_file_to_folder,

@@ -10,10 +10,10 @@ import json
 import sqlite3
 import xml.etree.ElementTree as ET
 
-from modules.crawler import Crawler
-from modules.checker import url_canon
-from modules.checker import extract_domain
-from modules.checker import folder
+from torcrawl.crawler import Crawler
+from torcrawl.checker import url_canon
+from torcrawl.checker import extract_domain
+from torcrawl.checker import folder
 
 
 class TestCrawlerFunctions(unittest.TestCase):
@@ -136,7 +136,7 @@ class TestCrawlerFunctions(unittest.TestCase):
 
         self.addCleanup(lambda: os.path.exists(regex_file_path) and os.remove(regex_file_path))
 
-        with patch('modules.crawler.DEFAULT_REGEX_FILE', regex_file_path):
+        with patch('torcrawl.crawler.DEFAULT_REGEX_FILE', regex_file_path):
             crawler = Crawler(self.crawler.website, 1, 0, self.out_path, False, False)
 
         result = crawler.crawl()
@@ -147,10 +147,10 @@ class TestCrawlerFunctions(unittest.TestCase):
 
     def test_make_request_with_random_ua_and_proxy(self):
         crawler = Crawler("http://example.com", 0, 0, self.out_path, False, False, random_ua=True, random_proxy=True)
-        with mock.patch("modules.crawler.get_random_proxy", return_value="proxy:9050") as proxy_mock, \
-             mock.patch("modules.crawler.setup_proxy_connection") as setup_mock, \
-             mock.patch("modules.crawler.get_random_user_agent", return_value="UA") as ua_mock, \
-             mock.patch("modules.crawler.urllib.request.urlopen") as urlopen_mock:
+        with mock.patch("torcrawl.crawler.get_random_proxy", return_value="proxy:9050") as proxy_mock, \
+             mock.patch("torcrawl.crawler.setup_proxy_connection") as setup_mock, \
+             mock.patch("torcrawl.crawler.get_random_user_agent", return_value="UA") as ua_mock, \
+             mock.patch("torcrawl.crawler.urllib.request.urlopen") as urlopen_mock:
             crawler._make_request("http://example.com")
         proxy_mock.assert_called_once()
         setup_mock.assert_called_once_with("proxy:9050")
@@ -161,7 +161,7 @@ class TestCrawlerFunctions(unittest.TestCase):
 
     def test_make_request_without_randoms(self):
         crawler = Crawler("http://example.com", 0, 0, self.out_path, False, False, random_ua=False, random_proxy=False)
-        with mock.patch("modules.crawler.urllib.request.urlopen") as urlopen_mock:
+        with mock.patch("torcrawl.crawler.urllib.request.urlopen") as urlopen_mock:
             crawler._make_request("http://example.com")
         urlopen_mock.assert_called_once_with("http://example.com")
 

@@ -16,7 +16,14 @@ RESOURCE_COLORS = {
 
 
 def export_visualization(export_path, prefix, start_url, verbose=False):
-    """Generate an HTML visualization from the SQLite database using NetworkX and PyVis."""
+    """ Generate an HTML visualization from the SQLite database using NetworkX and PyVis.
+
+    :param export_path: String - Path where the database and output will be saved.
+    :param prefix: String - Prefix for the database filename.
+    :param start_url: String - Starting URL for the crawl visualization.
+    :param verbose: Boolean - Whether to print verbose output.
+    :return: String - Path to the generated HTML file, or None if database not found.
+    """
     db_path = os.path.join(export_path, f"{prefix}.db")
     if not os.path.exists(db_path):
         print("## Visualization skipped: database not found. Use --database (-DB).")

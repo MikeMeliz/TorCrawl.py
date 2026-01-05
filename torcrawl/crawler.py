@@ -11,9 +11,9 @@ from collections import defaultdict
 from urllib.error import HTTPError, URLError
 
 from bs4 import BeautifulSoup
-from modules.checker import get_random_user_agent
-from modules.checker import get_random_proxy
-from modules.checker import setup_proxy_connection
+from torcrawl.checker import get_random_user_agent
+from torcrawl.checker import get_random_proxy
+from torcrawl.checker import setup_proxy_connection
 
 DEFAULT_URL_REGEX = r'(?:(?:https?|ftp|file):\/\/|www\.)[^\s"\'<>]+'
 DEFAULT_REGEX_FILE = os.path.abspath(
@@ -23,8 +23,26 @@ IMAGE_EXTS = ('.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp')
 
 
 class Crawler:
+    """ Web crawler that extracts links, resources, and metadata from websites.
+    
+    Crawls websites through TOR network (or without) and extracts links, images,
+    scripts, emails, telephones, and other resources. Supports depth-based crawling
+    with configurable delays between requests.
+    """
+    
     def __init__(self, website, c_depth, c_pause, out_path, logs, verbose,
                  random_ua=False, random_proxy=False):
+        """ Initialize the Crawler instance.
+
+        :param website: String - Starting URL to crawl.
+        :param c_depth: Integer - Depth of crawl (how many levels deep).
+        :param c_pause: Float - Pause time in seconds between requests.
+        :param out_path: String - Output path for results.
+        :param logs: Boolean - Whether to write log files.
+        :param verbose: Boolean - Whether to show verbose output.
+        :param random_ua: Boolean - Whether to use random user-agent rotation.
+        :param random_proxy: Boolean - Whether to use random proxy rotation.
+        """
         self.website = website
         self.c_depth = c_depth
         self.c_pause = c_pause
@@ -68,7 +86,10 @@ class Crawler:
         self.titles = {}
 
     def _load_regex_patterns(self):
-        """Load regex patterns from res/regex_patterns.txt plus default URL pattern."""
+        """ Load regex patterns from res/regex_patterns.txt plus default URL pattern.
+
+        :return: List - Compiled regex patterns for link extraction.
+        """
         patterns = [DEFAULT_URL_REGEX]
 
         # Only read patterns from the dedicated file.
@@ -94,10 +115,11 @@ class Crawler:
         return compiled_patterns
 
     def excludes(self, link, source_url=None):
-        """ Excludes links that are not required.
+        """ Excludes links that are not required (images, scripts, external links, etc.).
 
-        :param link: String
-        :return: Boolean
+        :param link: String - URL link to check.
+        :param source_url: String - Source URL where the link was found.
+        :return: Boolean - True if link should be excluded, False otherwise.
         """
         now = self.timestamp
         source = source_url or self.website
@@ -167,8 +189,8 @@ class Crawler:
     def canonical(self, link):
         """ Canonicalization of the link.
 
-        :param link: String: URL(s)
-        :return: String 'final_link': parsed canonical url.
+        :param link: String - URL to canonicalize.
+        :return: String - Parsed canonical URL, or None if invalid.
         """
         # Already formatted
         if link.startswith(self.website):
@@ -199,6 +221,11 @@ class Crawler:
             return f"{parsed_base.scheme}:{link}"
 
     def write_log(self, log):
+        """ Write log entry to crawler.log file.
+
+        :param log: String - Log message to write.
+        :return: None
+        """
         log_path = self.out_path + '/crawler.log'
         now = datetime.datetime.now()
 
@@ -214,8 +241,8 @@ class Crawler:
     def _make_request(self, url):
         """ Makes an HTTP request with optional random user-agent and proxy.
         
-        :param url: String - URL to request
-        :return: HTTPResponse object
+        :param url: String - URL to request.
+        :return: HTTPResponse - Response object from urllib.
         """
         # Set up proxy if random proxy is enabled
         if self.random_proxy:
@@ -233,8 +260,9 @@ class Crawler:
 
 
     def crawl(self):
-        """ Core of the crawler.
-        :return: List (ord_lst) - List of crawled links.
+        """ Core of the crawler. Performs depth-based crawling of the website.
+
+        :return: List - Ordered list of crawled links.
         """
         lst = set()
         ord_lst = []
@@ -361,7 +389,10 @@ class Crawler:
         return ord_lst
 
     def _serialized_findings(self):
-        """Return findings as JSON-serializable dict."""
+        """ Return findings as JSON-serializable dict.
+
+        :return: Dict - Serialized findings with all discovered resources.
+        """
         return {
             "start_url": self.website,
             "links": sorted(self.findings["links"]),
@@ -374,7 +405,11 @@ class Crawler:
         }
 
     def _normalize_for_dedupe(self, url):
-        """Normalize URL for deduplication: lower-case host, strip leading www."""
+        """ Normalize URL for deduplication: lower-case host, strip leading www.
+
+        :param url: String - URL to normalize.
+        :return: String - Normalized URL.
+        """
         try:
             parsed = urlparse(url)
             netloc = parsed.netloc.lower()
@@ -385,7 +420,13 @@ class Crawler:
             return url.strip().lower()
 
     def _add_link(self, ver_link, source_url, lst):
-        """Add link to collections with deduplication by normalized host."""
+        """ Add link to collections with deduplication by normalized host.
+
+        :param ver_link: String - Verified canonical link.
+        :param source_url: String - Source URL where link was found.
+        :param lst: Set - Set of links to add to.
+        :return: None
+        """
         norm = self._normalize_for_dedupe(ver_link)
         if norm not in self.normalized_links:
             self.normalized_links.add(norm)
@@ -396,7 +437,13 @@ class Crawler:
             self.edges.add((source_url, ver_link))
 
     def _log_once(self, category, link, filepath):
-        """Log to file only if normalized link not already written."""
+        """ Log to file only if normalized link not already written.
+
+        :param category: String - Category of resource (images, scripts, etc.).
+        :param link: String - Link to log.
+        :param filepath: String - Path to log file.
+        :return: None
+        """
         norm = self._normalize_for_dedupe(link)
         if norm in self.logged.get(category, set()):
             return
@@ -405,7 +452,11 @@ class Crawler:
             lst_file.write(str(link) + '\n')
 
     def _is_image_link(self, link):
-        """Best-effort image detection using URL path extension (ignoring query/fragment)."""
+        """ Best-effort image detection using URL path extension (ignoring query/fragment).
+
+        :param link: String - URL to check.
+        :return: Boolean - True if link appears to be an image, False otherwise.
+        """
         try:
             parsed = urlparse(link)
             path = parsed.path.lower()
@@ -415,7 +466,10 @@ class Crawler:
         return any(base.endswith(ext) for ext in IMAGE_EXTS)
 
     def export_payload(self):
-        """Return data needed for downstream exporters/visualization."""
+        """ Return data needed for downstream exporters/visualization.
+
+        :return: Dict - Payload containing start_url, data, edges, titles, and resources.
+        """
         return {
             "start_url": self.website,
             "data": self._serialized_findings(),

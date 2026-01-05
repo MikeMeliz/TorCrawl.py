@@ -12,18 +12,18 @@ from http.client import IncompleteRead
 from bs4 import BeautifulSoup
 from pathlib import Path
 
-from modules.checker import url_canon
-from modules.checker import get_random_user_agent
-from modules.checker import get_random_proxy
-from modules.checker import setup_proxy_connection
+from torcrawl.checker import url_canon
+from torcrawl.checker import get_random_user_agent
+from torcrawl.checker import get_random_proxy
+from torcrawl.checker import setup_proxy_connection
 
 
 def text(response=None):
     """ Removes all the garbage from the HTML and takes only text elements
     from the page.
 
-    :param response: HTTP Response.
-    :return: String: Text only stripped response.
+    :param response: bytes - HTTP Response body.
+    :return: String - Text only stripped response.
     """
     soup = BeautifulSoup(response, features="lxml")
     for s in soup(['script', 'style']):
@@ -59,9 +59,9 @@ def _make_request_with_ua(url, random_ua=False, random_proxy=False, timeout=10):
 def check_yara(raw=None, yara=0):
     """ Validates Yara Rule to categorize the site and check for keywords.
 
-    :param raw: HTTP Response body.
-    :param yara:  Integer: Keyword search argument.
-    :return matches: List of yara rule matches.
+    :param raw: bytes - HTTP Response body.
+    :param yara: Integer - Keyword search argument (0=html, 1=text only).
+    :return: List - Yara rule matches.
     """
 
     try:
@@ -71,7 +71,7 @@ def check_yara(raw=None, yara=0):
               "Try this solution: https://stackoverflow.com/a/51504326")
 
     try:
-        file_path = resources.files("res").joinpath("keywords.yar")
+        file_path = resources.files("torcrawl.res").joinpath("keywords.yar")
     except (FileNotFoundError, ModuleNotFoundError):
         file_path = os.path.join('res/keywords.yar')
 
@@ -92,11 +92,11 @@ def input_file_to_folder(input_file, output_path, yara=None, random_ua=False, ra
     scrapes the contents of the resulting web pages and writes the contents to
     the into out_path/{url_address}.
 
-    :param input_file: String: Filename of the crawled Urls.
-    :param output_path: String: Pathname of results.
-    :param yara: Integer: Keyword search argument.
-    :param random_ua: Boolean: Whether to use random user-agent rotation.
-    :param random_proxy: Boolean: Whether to use random proxy rotation.
+    :param input_file: String - Filename of the crawled URLs.
+    :param output_path: String - Pathname of results.
+    :param yara: Integer - Keyword search argument (0=html, 1=text only).
+    :param random_ua: Boolean - Whether to use random user-agent rotation.
+    :param random_proxy: Boolean - Whether to use random proxy rotation.
     :return: None
     """
     i = 0
@@ -156,10 +156,10 @@ def input_file_to_folder(input_file, output_path, yara=None, random_ua=False, ra
 def input_file_to_terminal(input_file, yara, random_ua=False, random_proxy=False):
     """ Input links from file and extract them into terminal.
 
-    :param input_file: String: File name of links file.
-    :param yara: Integer: Keyword search argument.
-    :param random_ua: Boolean: Whether to use random user-agent rotation.
-    :param random_proxy: Boolean: Whether to use random proxy rotation.
+    :param input_file: String - File name of links file.
+    :param yara: Integer - Keyword search argument (0=html, 1=text only).
+    :param random_ua: Boolean - Whether to use random user-agent rotation.
+    :param random_proxy: Boolean - Whether to use random proxy rotation.
     :return: None
     """
     try:
@@ -185,12 +185,12 @@ def url_to_folder(website, output_file, output_path, yara, random_ua=False, rand
     """ Scrapes the contents of the provided web address and outputs the
     contents to file.
 
-    :param website: String: Url of web address to scrape.
-    :param output_file: String: Filename of the results.
-    :param output_path: String: Folder name of the output findings.
-    :param yara: Integer: Keyword search argument.
-    :param random_ua: Boolean: Whether to use random user-agent rotation.
-    :param random_proxy: Boolean: Whether to use random proxy rotation.
+    :param website: String - URL of web address to scrape.
+    :param output_file: String - Filename of the results.
+    :param output_path: String - Folder name of the output findings.
+    :param yara: Integer - Keyword search argument (0=html, 1=text only).
+    :param random_ua: Boolean - Whether to use random user-agent rotation.
+    :param random_proxy: Boolean - Whether to use random proxy rotation.
     :return: None
     """
     # Extract page to file
@@ -216,10 +216,10 @@ def url_to_folder(website, output_file, output_path, yara, random_ua=False, rand
 def url_to_terminal(website, yara, random_ua=False, random_proxy=False):
     """ Scrapes provided web address and prints the results to the terminal.
 
-    :param website: String: URL of website to scrape.
-    :param yara: Integer: Keyword search argument.
-    :param random_ua: Boolean: Whether to use random user-agent rotation.
-    :param random_proxy: Boolean: Whether to use random proxy rotation.
+    :param website: String - URL of website to scrape.
+    :param yara: Integer - Keyword search argument (0=html, 1=text only).
+    :param random_ua: Boolean - Whether to use random user-agent rotation.
+    :param random_proxy: Boolean - Whether to use random proxy rotation.
     :return: None
     """
     try:
@@ -241,15 +241,14 @@ def url_to_terminal(website, yara, random_ua=False, random_proxy=False):
 def extractor(website, crawl, output_file, input_file, output_path, selection_yara, random_ua=False, random_proxy=False):
     """ Extractor - scrapes the resulting website or discovered links.
 
-    :param website: String: URL of website to scrape.
-    :param crawl: Boolean: input_file_to_folder trigger.
-        If used iteratively scrape the urls from input_file.
-    :param output_file: String: Filename of resulting output from scrape.
-    :param input_file: String: Filename of crawled/discovered URLs
-    :param output_path: String: Dir path for output files.
-    :param selection_yara: String: Selected option of HTML or Text.
-    :param random_ua: Boolean: Whether to use random user-agent rotation.
-    :param random_proxy: Boolean: Whether to use random proxy rotation.
+    :param website: String - URL of website to scrape.
+    :param crawl: Boolean - input_file_to_folder trigger. If used iteratively scrape the urls from input_file.
+    :param output_file: String - Filename of resulting output from scrape.
+    :param input_file: String - Filename of crawled/discovered URLs.
+    :param output_path: String - Dir path for output files.
+    :param selection_yara: Integer - Selected option of HTML (0) or Text (1).
+    :param random_ua: Boolean - Whether to use random user-agent rotation.
+    :param random_proxy: Boolean - Whether to use random proxy rotation.
     :return: None
     """
     if len(input_file) > 0:

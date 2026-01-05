@@ -7,9 +7,9 @@ import json
 import sqlite3
 import xml.etree.ElementTree as ET
 
-from modules.crawler import Crawler
-from modules.checker import url_canon, extract_domain, folder
-from modules.export import export_json, export_xml, export_database
+from torcrawl.crawler import Crawler
+from torcrawl.checker import url_canon, extract_domain, folder
+from torcrawl.export import export_json, export_xml, export_database
 
 
 class TestExportFunctions(unittest.TestCase):

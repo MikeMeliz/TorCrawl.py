@@ -118,10 +118,10 @@ _proxies_cache = None
 def _read_resource_file(filename):
     """Return absolute path to packaged resource, falling back to CWD."""
     try:
-        return resources.files("res").joinpath(filename)
+        return resources.files("torcrawl.res").joinpath(filename)
     except (FileNotFoundError, ModuleNotFoundError):
         # Fallback for non-installed executions
-        return os.path.join("res", filename)
+        return os.path.join("torcrawl", "res", filename)
 
 
 def get_random_user_agent():

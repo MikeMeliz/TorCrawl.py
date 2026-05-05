@@ -1,5 +1,5 @@
 pysocks
-beautifulsoup4>=4.7.1
+beautifulsoup4>=4.14.3
 yara-python
 lxml
 networkx

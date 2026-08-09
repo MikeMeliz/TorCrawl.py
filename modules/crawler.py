@@ -228,8 +228,8 @@ class Crawler:
             user_agent = get_random_user_agent()
             if user_agent:
                 req = urllib.request.Request(url, headers={'User-Agent': user_agent})
-                return urllib.request.urlopen(req)
-        return urllib.request.urlopen(url)
+                return urllib.request.urlopen(req, timeout=10)
+        return urllib.request.urlopen(url, timeout=10)
 
 
     def crawl(self):
